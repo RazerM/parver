@@ -10,7 +10,7 @@ import attr
 from attr.validators import in_, instance_of, optional
 
 from ._helpers import UNSET, Infinity, NegativeInfinity
-from ._parse import parse_canonical, parse_permissive
+from ._parse import parse
 from . import _segments as segment
 
 
@@ -139,8 +139,7 @@ class Version(object):
 
     @classmethod
     def parse(cls, version, strict=False):
-        parse = parse_canonical if strict else parse_permissive
-        segments = parse(version)
+        segments = parse(version, strict=strict)
 
         kwargs = dict()
 

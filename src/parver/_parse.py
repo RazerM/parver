@@ -45,7 +45,7 @@ permissive = '''
     alpha = r'[a-zA-Z0-9]'
 '''
 
-_canonical_parser = ParserPEG(canonical, root_rule_name='version', skipws=False)
+_strict_parser = ParserPEG(canonical, root_rule_name='version', skipws=False)
 _permissive_parser = ParserPEG(
     permissive, root_rule_name='version', skipws=False, ignore_case=True)
 
@@ -205,18 +205,14 @@ class ParseError(Exception):
     pass
 
 
-def parse_canonical(version):
+def parse(version, strict=False):
+    parser = _strict_parser if strict else _permissive_parser
+
+    if not strict:
+        version = version.lower()
+
     try:
-        tree = _canonical_parser.parse(version.strip())
-    except NoMatch as exc:
-        six.raise_from(ParseError(str(exc)), None)
-
-    return visit_parse_tree(tree, VersionVisitor())
-
-
-def parse_permissive(version):
-    try:
-        tree = _permissive_parser.parse(version.strip().lower())
+        tree = parser.parse(version.strip())
     except NoMatch as exc:
         six.raise_from(ParseError(str(exc)), None)
 
