@@ -4,17 +4,20 @@ from __future__ import absolute_import, division, print_function
 import itertools
 import re
 import six
+from collections import Sequence
 from functools import partial
 
 import attr
 from attr.validators import in_, instance_of, optional
 
-from ._helpers import UNSET, Infinity, NegativeInfinity
+from ._helpers import UNSET, Infinity
 from ._parse import parse
 from . import _segments as segment
 
 
 def force_tuple(n):
+    if isinstance(n, six.string_types):
+        raise TypeError('Expected tuple or int.')
     if not isinstance(n, tuple):
         return n,
     return n
@@ -23,14 +26,6 @@ def force_tuple(n):
 POST_TAGS = {'post', 'rev', 'r'}
 SEPS = {'.', '-', '_'}
 PRE_TAGS = {'c', 'rc', 'alpha', 'a', 'beta', 'b', 'preview', 'pre'}
-
-validate_post_tag = optional(in_(POST_TAGS | {UNSET}))
-validate_pre_tag = optional(in_(PRE_TAGS))
-validate_sep = optional(in_(SEPS))
-validate_sep_or_unset = optional(in_(SEPS | {UNSET}))
-is_bool = instance_of(bool)
-is_int = instance_of(int)
-is_str = instance_of(six.string_types)
 
 
 def unset_or(validator):
@@ -42,9 +37,19 @@ def unset_or(validator):
     return validate
 
 
+validate_post_tag = unset_or(optional(in_(POST_TAGS)))
+validate_pre_tag = optional(in_(PRE_TAGS))
+validate_sep = optional(in_(SEPS))
+validate_sep_or_unset = unset_or(optional(in_(SEPS)))
+is_bool = instance_of(bool)
+is_int = instance_of(int)
+is_str = instance_of(six.string_types)
+is_seq = instance_of(Sequence)
+
+
 @attr.s(frozen=True, repr=False, cmp=False)
 class Version(object):
-    release = attr.ib(converter=force_tuple)
+    release = attr.ib(converter=force_tuple, validator=is_seq)
     v = attr.ib(default=False, validator=is_bool)
     epoch = attr.ib(default=None, validator=optional(is_int))
     pre_tag = attr.ib(default=None, validator=validate_pre_tag)

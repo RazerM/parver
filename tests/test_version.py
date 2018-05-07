@@ -110,3 +110,39 @@ def test_invalid(kwargs):
     """Test bad keyword combinations."""
     with pytest.raises(ValueError):
         Version(release=1, **kwargs)
+
+
+@pytest.mark.parametrize('kwargs', [
+    dict(release='1'),
+    dict(v=3),
+    dict(epoch='1'),
+    dict(pre_tag='b', pre='2'),
+    dict(post='3'),
+    dict(dev='3'),
+    dict(local=[1, 'abc']),
+    dict(local=1),
+])
+def test_validation_type(kwargs):
+    if 'release' not in kwargs:
+        kwargs['release'] = 1
+
+    with pytest.raises(TypeError):
+        # print so we can see output when test fails
+        print(Version(**kwargs))
+
+
+@pytest.mark.parametrize('kwargs', [
+    dict(pre_tag='alph'),
+    dict(pre_tag='a', pre_sep1='x'),
+    dict(pre_tag='a', pre_sep2='x'),
+    dict(post=1, post_sep1='x'),
+    dict(post=1, post_sep2='x'),
+    dict(dev=4, dev_sep='y'),
+])
+def test_validation_value(kwargs):
+    if 'release' not in kwargs:
+        kwargs['release'] = 1
+
+    with pytest.raises(ValueError):
+        # print so we can see output when test fails
+        print(Version(**kwargs))
