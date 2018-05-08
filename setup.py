@@ -16,6 +16,23 @@ exec(about_mod, about)
 
 LONG_DESC = open('README.rst', encoding='utf-8').read()
 
+extras_require = {
+    'test': [
+        'pytest ~= 3.5',
+        'hypothesis ~= 3.56',
+        'pretend ~= 1.0',
+    ],
+    'docstest': [
+        'doc8',
+        'sphinx',
+        'sphinx_rtd_theme',
+    ],
+    'pep8test': [
+        'flake8',
+        'pep8-naming',
+    ],
+}
+
 setup(
     name='parver',
     version=about['__version__'],
@@ -29,8 +46,9 @@ setup(
     packages=find_packages('src'),
     package_dir={'': 'src'},
     install_requires=[
-        'arpeggio',
-        'attrs >= 17.4',
+        'arpeggio ~= 1.7',
+        'attrs >= 17.4.0',
+        'six ~= 1.9',
     ],
     python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*',
     keywords='pep440 version parse',

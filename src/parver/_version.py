@@ -3,11 +3,11 @@ from __future__ import absolute_import, division, print_function
 
 import itertools
 import re
-import six
 from collections import Sequence
 from functools import partial
 
 import attr
+import six
 from attr.validators import in_, instance_of, optional
 
 from ._helpers import UNSET, Infinity
