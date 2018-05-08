@@ -41,6 +41,7 @@ def test_parse_permissive_hypothesis(prefix, version, suffix):
 def test_parse_canonical_hypothesis(prefix, version, suffix):
     Version.parse(prefix + version + suffix, strict=True)
 
+
 @given(version_string())
 def test_roundtrip(version):
     assert str(Version.parse(version)) == version

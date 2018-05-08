@@ -5,6 +5,7 @@ import pytest
 
 from parver import Version
 
+
 def v(*args, **kwargs):
     return args, kwargs
 
