@@ -50,6 +50,7 @@ setup(
         'attrs >= 17.4.0',
         'six ~= 1.9',
     ],
+    extras_require=extras_require,
     python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*',
     keywords='pep440 version parse',
     classifiers=[
