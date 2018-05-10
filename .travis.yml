@@ -4,6 +4,10 @@ cache:
   directories:
     - $HOME/.cache/pip
 
+env:
+  global:
+    - HYPOTHESIS_PROFILE=ci
+
 matrix:
   include:
     - python: 2.7
