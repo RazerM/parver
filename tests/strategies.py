@@ -58,7 +58,7 @@ def pre(draw, strict=False):
     else:
         num_part = draw(one_of(just(''), just(sep2 + n)))
 
-    return sep1 + word + num_part
+    return draw(one_of(just(''), just(sep1 + word + num_part)))
 
 
 @composite
@@ -89,7 +89,7 @@ def post(draw, strict=False):
     post = just(post)
     post_implicit = num_str.map(lambda s: '-' + s)
 
-    return draw(one_of(post_implicit, post))
+    return draw(one_of(just(''), post_implicit, post))
 
 
 @composite
@@ -101,7 +101,7 @@ def dev(draw, strict=False):
     else:
         num_part = draw(one_of(just(''), num_str))
 
-    return sep + 'dev' + num_part
+    return draw(one_of(just(''), just(sep + 'dev' + num_part)))
 
 
 @composite
