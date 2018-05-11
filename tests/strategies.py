@@ -3,6 +3,8 @@ from __future__ import absolute_import, division, print_function
 
 import string
 
+from parver import Version
+
 from hypothesis.strategies import (
     composite, integers, just, lists, one_of, sampled_from, text)
 
@@ -142,3 +144,8 @@ def version_string(draw, strict=False):
         draw(dev(strict=strict)) +
         draw(local(strict=strict))
     )
+
+
+@composite
+def version_strategy(draw, strict=False):
+    return Version.parse(draw(version_string(strict=strict)))

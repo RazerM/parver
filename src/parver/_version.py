@@ -18,7 +18,7 @@ from . import _segments as segment
 def force_tuple(n):
     if isinstance(n, six.string_types):
         raise TypeError('Expected tuple or int.')
-    if not isinstance(n, tuple):
+    if not isinstance(n, Sequence):
         return n,
     return n
 
@@ -62,7 +62,7 @@ class Version(object):
     pre_sep2 = attr.ib(default=None, validator=validate_sep)
     post_sep1 = attr.ib(default=UNSET, validator=validate_sep_or_unset)
     post_sep2 = attr.ib(default=UNSET, validator=validate_sep_or_unset)
-    dev_sep = attr.ib(default='.', validator=validate_sep)
+    dev_sep = attr.ib(default=UNSET, validator=validate_sep_or_unset)
     post_tag = attr.ib(default=UNSET, validator=validate_post_tag)
 
     epoch_implicit = attr.ib(default=False, init=False)
@@ -100,10 +100,7 @@ class Version(object):
                     'post_sep1 and post_sep2 cannot be set for implicit post '
                     'releases (post_tag=None)')
 
-        if self.post_sep1 is UNSET:
-            set('post_sep1', '.')
-        if self.post_sep2 is UNSET:
-            set('post_sep2', None)
+            set('post_sep1', '-')
 
         if self.post is not UNSET:
             if self.post_tag is UNSET:
@@ -126,8 +123,16 @@ class Version(object):
         if self.post_tag is UNSET:
             set('post_tag', None)
 
+        if self.post_sep1 is UNSET:
+            set('post_sep1', None if self.post is None else '.')
+        if self.post_sep2 is UNSET:
+            set('post_sep2', None)
+
         if self.dev is UNSET:
             set('dev', None)
+
+        if self.dev_sep is UNSET:
+            set('dev_sep', None if self.dev is None else '.')
 
         assert self.post_sep1 is not UNSET
         assert self.post_sep2 is not UNSET
@@ -287,6 +292,124 @@ class Version(object):
     @property
     def is_devrelease(self):
         return self.dev is not None
+
+    def _attrs_as_init(self):
+        d = attr.asdict(self, filter=lambda attr, val: attr.init)
+
+        if self.epoch_implicit:
+            d['epoch'] = None
+
+        if self.pre_implicit:
+            d['pre'] = None
+
+        if self.post_implicit:
+            d['post'] = None
+
+        if self.dev_implicit:
+            d['dev'] = None
+
+        if self.pre is None:
+            del d['pre']
+            del d['pre_tag']
+            del d['pre_sep1']
+            del d['pre_sep2']
+
+        if self.post is None:
+            del d['post']
+            del d['post_tag']
+            del d['post_sep1']
+            del d['post_sep2']
+        elif self.post_tag is None:
+            del d['post_sep1']
+            del d['post_sep2']
+
+        if self.dev is None:
+            del d['dev']
+            del d['dev_sep']
+
+        return d
+
+    def clear(self, pre=False, post=False, dev=False):
+        d = self._attrs_as_init()
+
+        if pre:
+            d.pop('pre', None)
+            d.pop('pre_tag', None)
+            d.pop('pre_sep1', None)
+            d.pop('pre_sep2', None)
+
+        if post:
+            d.pop('post', None)
+            d.pop('post_tag', None)
+            d.pop('post_sep1', None)
+            d.pop('post_sep2', None)
+
+        if dev:
+            d.pop('dev', None)
+            d.pop('dev_sep', None)
+
+        return Version(**d)
+
+    def replace(self, **kwargs):
+        d = self._attrs_as_init()
+
+        if kwargs.get('post_tag', UNSET) is None:
+            # ensure we don't carry over separators for new implicit post
+            # release. By popping from d, there will still be an error if the
+            # user tries to set them in kwargs
+            d.pop('post_sep1', None)
+            d.pop('post_sep2', None)
+
+        d.update(kwargs)
+        return Version(**d)
+
+    def bump_release(self, index):
+        if not isinstance(index, int):
+            raise TypeError('index must be an integer')
+
+        if index < 0:
+            raise ValueError('index cannot be negative')
+
+        release = list(self.release)
+        new_len = index + 1
+
+        if len(release) < new_len:
+            release.extend(itertools.repeat(0, new_len - len(release)))
+
+        for i, value in enumerate(release):
+            if i == index:
+                release[i] += 1
+            elif i > index:
+                release[i] = 0
+
+        return self.replace(release=release)
+
+    def bump_pre(self, tag=None):
+        pre = 0 if self.pre is None else self.pre + 1
+
+        if self.pre_tag is None:
+            if tag is None:
+                raise ValueError(
+                    "Cannot bump without pre_tag. Use .bump_pre('<tag>')")
+        else:
+            # This is an error because different tags have different meanings
+            if tag is not None and self.pre_tag != tag:
+                raise ValueError(
+                    'Cannot bump with pre_tag mismatch ({0} != {1}). Use '
+                    '.replace(pre_tag={1!r})'.format(self.pre_tag, tag))
+            tag = self.pre_tag
+
+        return self.replace(pre=pre, pre_tag=tag)
+
+    def bump_post(self, tag=UNSET):
+        post = 0 if self.post is None else self.post + 1
+        if tag is UNSET and self.post is not None:
+            tag = self.post_tag
+        return self.replace(post=post, post_tag=tag)
+
+    def bump_dev(self):
+        dev = 0 if self.dev is None else self.dev + 1
+        return self.replace(dev=dev)
 
 
 def _normalize_pre_tag(pre_tag):
