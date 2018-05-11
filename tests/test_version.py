@@ -142,6 +142,8 @@ def test_validation_type(kwargs):
     dict(post=1, post_sep1='x'),
     dict(post=1, post_sep2='x'),
     dict(dev=4, dev_sep='y'),
+    dict(post_tag=None, post=1, post_sep1='.'),
+    dict(post_tag=None, post=1, post_sep2='.'),
 ])
 def test_validation_value(kwargs):
     if 'release' not in kwargs:
