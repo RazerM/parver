@@ -397,6 +397,16 @@ def test_bump_release(before, index, after):
     assert str(Version.parse(before).bump_release(index)) == after
 
 
+@pytest.mark.parametrize('index, exc', [
+    ('1', TypeError),
+    (1.1, TypeError),
+    (-1, ValueError),
+])
+def test_bump_release_error(index, exc):
+    with pytest.raises(exc):
+        print(Version(release=1).bump_release(index))
+
+
 @pytest.mark.parametrize('before, tag, after', [
     ('1', 'a', '1a0'),
     ('1a0', None, '1a1'),
@@ -406,6 +416,15 @@ def test_bump_release(before, index, after):
 ])
 def test_bump_pre(before, tag, after):
     assert str(Version.parse(before).bump_pre(tag)) == after
+
+
+@pytest.mark.parametrize('version, tag', [
+    ('1.2', None),
+    ('1.2a', 'b'),
+])
+def test_bump_pre_error(version, tag):
+    with pytest.raises(ValueError):
+        print(Version.parse(version).bump_pre(tag))
 
 
 @pytest.mark.parametrize('before, kwargs, after', [

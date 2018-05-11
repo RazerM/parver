@@ -34,7 +34,7 @@ VERSIONS = [
 # that's what test_valid_versions is for.
 try:
     PARSED_VERSIONS = [Version.parse(v) for v in VERSIONS]
-except ParseError:
+except ParseError:  # pragma: no cover
     PARSED_VERSIONS = []
 
 
