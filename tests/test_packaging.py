@@ -30,12 +30,19 @@ VERSIONS = [
 
 ]
 
+# Don't want an exception here if VERSIONS cannot be parsed,
+# that's what test_valid_versions is for.
+try:
+    PARSED_VERSIONS = [Version.parse(v) for v in VERSIONS]
+except ParseError:
+    PARSED_VERSIONS = []
+
 
 class TestVersion:
 
     @pytest.mark.parametrize("version", VERSIONS)
     def test_valid_versions(self, version):
-        Version.parse(version)
+        assert str(Version.parse(version)) == version
 
     @pytest.mark.parametrize(
         "version",
@@ -243,9 +250,9 @@ class TestVersion:
     def test_version_rc_and_c_equals(self):
         assert Version.parse("1.0rc1") == Version.parse("1.0c1")
 
-    @pytest.mark.parametrize("version", VERSIONS)
+    @pytest.mark.parametrize("version", PARSED_VERSIONS)
     def test_version_hash(self, version):
-        assert hash(Version.parse(version)) == hash(Version.parse(version))
+        assert hash(version) == hash(version)
 
     @pytest.mark.parametrize(
         ("version", "public"),
@@ -636,37 +643,37 @@ class TestVersion:
             *
             # Verify that the less than (<) operator works correctly
             [
-                [(x, y, operator.lt) for y in VERSIONS[i + 1:]]
-                for i, x in enumerate(VERSIONS)
+                [(x, y, operator.lt) for y in PARSED_VERSIONS[i + 1:]]
+                for i, x in enumerate(PARSED_VERSIONS)
             ] +
             # Verify that the less than equal (<=) operator works correctly
             [
-                [(x, y, operator.le) for y in VERSIONS[i:]]
-                for i, x in enumerate(VERSIONS)
+                [(x, y, operator.le) for y in PARSED_VERSIONS[i:]]
+                for i, x in enumerate(PARSED_VERSIONS)
             ] +
             # Verify that the equal (==) operator works correctly
             [
-                [(x, x, operator.eq) for x in VERSIONS]
+                [(x, x, operator.eq) for x in PARSED_VERSIONS]
             ] +
             # Verify that the not equal (!=) operator works correctly
             [
-                [(x, y, operator.ne) for j, y in enumerate(VERSIONS) if i != j]
-                for i, x in enumerate(VERSIONS)
+                [(x, y, operator.ne) for j, y in enumerate(PARSED_VERSIONS) if i != j]
+                for i, x in enumerate(PARSED_VERSIONS)
             ] +
             # Verify that the greater than equal (>=) operator works correctly
             [
-                [(x, y, operator.ge) for y in VERSIONS[:i + 1]]
-                for i, x in enumerate(VERSIONS)
+                [(x, y, operator.ge) for y in PARSED_VERSIONS[:i + 1]]
+                for i, x in enumerate(PARSED_VERSIONS)
             ] +
             # Verify that the greater than (>) operator works correctly
             [
-                [(x, y, operator.gt) for y in VERSIONS[:i]]
-                for i, x in enumerate(VERSIONS)
+                [(x, y, operator.gt) for y in PARSED_VERSIONS[:i]]
+                for i, x in enumerate(PARSED_VERSIONS)
             ]
         )
     )
     def test_comparison_true(self, left, right, op):
-        assert op(Version.parse(left), Version.parse(right))
+        assert op(left, right)
 
     @pytest.mark.parametrize(
         ("left", "right", "op"),
@@ -676,37 +683,37 @@ class TestVersion:
             *
             # Verify that the less than (<) operator works correctly
             [
-                [(x, y, operator.lt) for y in VERSIONS[:i + 1]]
-                for i, x in enumerate(VERSIONS)
+                [(x, y, operator.lt) for y in PARSED_VERSIONS[:i + 1]]
+                for i, x in enumerate(PARSED_VERSIONS)
             ] +
             # Verify that the less than equal (<=) operator works correctly
             [
-                [(x, y, operator.le) for y in VERSIONS[:i]]
-                for i, x in enumerate(VERSIONS)
+                [(x, y, operator.le) for y in PARSED_VERSIONS[:i]]
+                for i, x in enumerate(PARSED_VERSIONS)
             ] +
             # Verify that the equal (==) operator works correctly
             [
-                [(x, y, operator.eq) for j, y in enumerate(VERSIONS) if i != j]
-                for i, x in enumerate(VERSIONS)
+                [(x, y, operator.eq) for j, y in enumerate(PARSED_VERSIONS) if i != j]
+                for i, x in enumerate(PARSED_VERSIONS)
             ] +
             # Verify that the not equal (!=) operator works correctly
             [
-                [(x, x, operator.ne) for x in VERSIONS]
+                [(x, x, operator.ne) for x in PARSED_VERSIONS]
             ] +
             # Verify that the greater than equal (>=) operator works correctly
             [
-                [(x, y, operator.ge) for y in VERSIONS[i + 1:]]
-                for i, x in enumerate(VERSIONS)
+                [(x, y, operator.ge) for y in PARSED_VERSIONS[i + 1:]]
+                for i, x in enumerate(PARSED_VERSIONS)
             ] +
             # Verify that the greater than (>) operator works correctly
             [
-                [(x, y, operator.gt) for y in VERSIONS[i:]]
-                for i, x in enumerate(VERSIONS)
+                [(x, y, operator.gt) for y in PARSED_VERSIONS[i:]]
+                for i, x in enumerate(PARSED_VERSIONS)
             ]
         )
     )
     def test_comparison_false(self, left, right, op):
-        assert not op(Version.parse(left), Version.parse(right))
+        assert not op(left, right)
 
     @pytest.mark.parametrize(("op", "expected"), [("eq", False), ("ne", True)])
     def test_compare_other(self, op, expected):
