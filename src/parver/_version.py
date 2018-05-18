@@ -280,6 +280,18 @@ class Version(object):
         return self.dev is not None or self.pre is not None
 
     @property
+    def is_alpha(self):
+        return _normalize_pre_tag(self.pre_tag) == 'a'
+
+    @property
+    def is_beta(self):
+        return _normalize_pre_tag(self.pre_tag) == 'b'
+
+    @property
+    def is_release_candidate(self):
+        return _normalize_pre_tag(self.pre_tag) == 'rc'
+
+    @property
     def is_postrelease(self):
         return self.post is not None
 

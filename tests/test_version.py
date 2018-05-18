@@ -451,3 +451,41 @@ def test_bump_dev(before, after):
 def test_release_tuple():
     v = Version(release=[1, 2])
     assert isinstance(v.release, tuple)
+
+
+@pytest.mark.parametrize('version', [
+    '1a',
+    '1alpha',
+    '1a1',
+])
+def test_is_alpha(version):
+    v = Version.parse(version)
+    assert v.is_alpha
+    assert not v.is_beta
+    assert not v.is_release_candidate
+
+
+@pytest.mark.parametrize('version', [
+    '1b',
+    '1beta',
+    '1b1',
+])
+def test_is_beta(version):
+    v = Version.parse(version)
+    assert not v.is_alpha
+    assert v.is_beta
+    assert not v.is_release_candidate
+
+
+@pytest.mark.parametrize('version', [
+    '1rc',
+    '1c',
+    '1pre',
+    '1preview',
+    '1rc1',
+])
+def test_is_release_candidate(version):
+    v = Version.parse(version)
+    assert not v.is_alpha
+    assert not v.is_beta
+    assert v.is_release_candidate
