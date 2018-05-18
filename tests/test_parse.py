@@ -21,8 +21,14 @@ def test_parse_strict_hypothesis(prefix, version, suffix):
 
 @given(version_string(strict=False))
 def test_parse_strict_error(version):
-    # Exclude already normalised versions
-    assume(str(Version.parse(version).normalize()) != version)
+    v = Version.parse(version)
+
+    # Exclude already normalized versions
+    assume(str(v.normalize()) != version)
+
+    # 0!1 normalizes to '1'
+    assume(v.epoch != 0 or v.epoch_implicit)
+
     with pytest.raises(ParseError):
         Version.parse(version, strict=True)
 
