@@ -2,6 +2,7 @@
 from __future__ import absolute_import, division, print_function
 
 import itertools
+import operator
 import re
 from collections import Sequence
 from functools import partial
@@ -241,22 +242,22 @@ class Version(object):
         return hash(self._key)
 
     def __lt__(self, other):
-        return self._compare(other, lambda s, o: s < o)
+        return self._compare(other, operator.lt)
 
     def __le__(self, other):
-        return self._compare(other, lambda s, o: s <= o)
+        return self._compare(other, operator.le)
 
     def __eq__(self, other):
-        return self._compare(other, lambda s, o: s == o)
+        return self._compare(other, operator.eq)
 
     def __ge__(self, other):
-        return self._compare(other, lambda s, o: s >= o)
+        return self._compare(other, operator.ge)
 
     def __gt__(self, other):
-        return self._compare(other, lambda s, o: s > o)
+        return self._compare(other, operator.gt)
 
     def __ne__(self, other):
-        return self._compare(other, lambda s, o: s != o)
+        return self._compare(other, operator.ne)
 
     def _compare(self, other, method):
         if not isinstance(other, Version):
