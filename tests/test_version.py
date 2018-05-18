@@ -446,3 +446,8 @@ def test_bump_post(before, kwargs, after):
 ])
 def test_bump_dev(before, after):
     assert str(Version.parse(before).bump_dev()) == after
+
+
+def test_release_tuple():
+    v = Version(release=[1, 2])
+    assert isinstance(v.release, tuple)

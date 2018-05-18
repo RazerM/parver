@@ -21,6 +21,8 @@ def force_tuple(n):
         raise TypeError('Expected tuple or int.')
     if not isinstance(n, Sequence):
         return n,
+    if not isinstance(n, tuple):
+        return tuple(n)
     return n
 
 
