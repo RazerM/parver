@@ -326,7 +326,7 @@ class TestVersion:
         ],
     )
     def test_version_base_version(self, version, base_version):
-        assert Version.parse(version).base_version == base_version
+        assert str(Version.parse(version).base_version()) == base_version
 
     @pytest.mark.parametrize(
         ("version", "epoch"),

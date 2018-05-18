@@ -271,18 +271,9 @@ class Version(object):
     def public(self):
         return str(self).split('+', 1)[0]
 
-    @property
     def base_version(self):
-        parts = []
 
-        # Epoch
-        if self.epoch != 0:
-            parts.append('{0}!'.format(self.epoch))
-
-        # Release segment
-        parts.append('.'.join(str(x) for x in self.release))
-
-        return ''.join(parts)
+        return self.clear(pre=True, post=True, dev=True).replace(local=None)
 
     @property
     def is_prerelease(self):
