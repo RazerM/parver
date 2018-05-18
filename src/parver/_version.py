@@ -52,6 +52,165 @@ is_seq = instance_of(Sequence)
 
 @attr.s(frozen=True, repr=False, cmp=False)
 class Version(object):
+    """
+
+    :param release: Numbers for the release segment.
+    :type release: int or tuple[int]
+
+    :param v: Optional preceding v character.
+    :type v: bool
+
+    :param epoch: `Version epoch`_. Implicitly zero but hidden by default.
+    :type epoch: int
+
+    :param pre_tag: `Pre-release`_ identifier, typically `a`, `b`, or `rc`.
+        Required to signify a pre-release.
+    :type pre_tag: str
+
+    :param pre: `Pre-release`_ number. May be `None` to signify an
+        `implicit pre-release number`_.
+    :type pre: int
+
+    :param post: `Post-release`_ number. May be `None` to signify an
+        `implicit post release number`_.
+    :type post: int
+
+    :param dev: `Developmental release`_ number. May be `None` to signify an
+        `implicit development release number`_.
+    :type dev: int
+
+    :param local: `Local version`_ segment.
+    :type local:
+
+    :param pre_sep1: Specify an alternate separator before the pre-release
+        segment. The normal form is `None`.
+    :type pre_sep1: str
+
+    :param pre_sep2: Specify an alternate separator between the identifier and
+        number. The normal form is ``'.'``.
+    :type pre_sep2: str
+
+    :param post_sep1: Specify an alternate separator before the post release
+        segment. The normal form is ``'.'``.
+    :type post_sep1: str
+
+    :param post_sep2: Specify an alternate separator between the identifier and
+        number. The normal form is ``'.'``.
+    :type post_sep2: str
+
+    :param dev_sep: Specify an alternate separator before the development
+        release segment. The normal form is ``'.'``.
+    :type dev_sep: str
+
+    :param post_tag: Specify alternate post release identifier `rev` or `r`.
+        May be `None` to signify an `implicit post release`_.
+    :type post_tag: str
+
+    .. note:: The attributes below are not equal to the parameters passed to
+        the initialiser!
+
+        The main difference is that implicit numbers become `0` and set the
+        corresponding `_implicit` attribute:
+
+        .. doctest::
+
+            >>> v = Version(release=1, post=None)
+            >>> str(v)
+            '1.post'
+            >>> v.post
+            0
+            >>> v.post_implicit
+            True
+
+    .. attribute:: release
+
+        A tuple of integers giving the components of the release segment of
+        this :class:`Version` instance; that is, the ``1.2.3`` part of the
+        version number, including trailing zeroes but not including the epoch
+        or any prerelease/development/postrelease suffixes
+
+    .. attribute:: v
+
+        Whether this :class:`Version` instance includes a preceding v character.
+
+    .. attribute:: epoch
+
+        An integer giving the version epoch of this :class:`Version` instance.
+        :attr:`epoch_implicit` may be `True` if this number is zero.
+
+    .. attribute:: pre_tag
+
+        If this :class:`Version` instance represents a pre-release, this
+        attribute will be the pre-release identifier. One of `a`, `b`, `rc`,
+        `c`, `alpha`, `beta`, `preview`, or `pre`.
+
+        **Note:** you should not use this attribute to check or compare
+        pre-release identifiers. Use :meth:`is_alpha`, :meth:`is_beta`, and
+        :meth:`is_release_candidate` instead.
+
+    .. attribute:: pre
+
+        If this :class:`Version` instance represents a pre-release, this
+        attribute will be the pre-release number. If this instance is not a
+        pre-release, the attribute will be `None`. :attr:`pre_implicit` may be
+        `True` if this number is zero.
+
+    .. attribute:: post
+
+        If this :class:`Version` instance represents a postrelease, this
+        attribute will be the postrelease number (an integer); otherwise, it
+        will be `None`. :attr:`post_implicit` may be `True` if this number
+        is zero.
+
+    .. attribute:: dev
+
+        If this :class:`Version` instance represents a development release,
+        this attribute will be the development release number (an integer);
+        otherwise, it will be `None`. :attr:`dev_implicit` may be `True` if this
+        number is zero.
+
+    .. attribute:: local
+
+        A string representing the local version portion of this :class:`Version`
+        instance if it has one, or ``None`` otherwise.
+
+    .. attribute:: pre_sep1
+
+        The separator before the pre-release identifier.
+
+    .. attribute:: pre_sep2
+
+        The seperator between the pre-release identifier and number.
+
+    .. attribute:: post_sep1
+
+        The separator before the post release identifier.
+
+    .. attribute:: post_sep2
+
+        The seperator between the post release identifier and number.
+
+    .. attribute:: dev_sep
+
+        The separator before the develepment release identifier.
+
+    .. attribute:: post_tag
+
+        If this :class:`Version` instance represents a post release, this
+        attribute will be the post release identifier. One of `post`, `rev`,
+        `r`, or `None` to represent an implicit post release.
+
+    .. _`Version epoch`: https://www.python.org/dev/peps/pep-0440/#version-epochs
+    .. _`Pre-release`: https://www.python.org/dev/peps/pep-0440/#pre-releases
+    .. _`implicit pre-release number`: https://www.python.org/dev/peps/pep-0440/#implicit-pre-release-number
+    .. _`Post-release`: https://www.python.org/dev/peps/pep-0440/#post-releases
+    .. _`implicit post release number`: https://www.python.org/dev/peps/pep-0440/#implicit-post-release-number
+    .. _`Developmental release`: https://www.python.org/dev/peps/pep-0440/#developmental-releases
+    .. _`implicit development release number`: https://www.python.org/dev/peps/pep-0440/#implicit-development-release-number
+    .. _`Local version`: https://www.python.org/dev/peps/pep-0440/#local-version-identifiers
+    .. _`implicit post release`: https://www.python.org/dev/peps/pep-0440/#implicit-post-releases
+
+    """
     release = attr.ib(converter=force_tuple, validator=is_seq)
     v = attr.ib(default=False, validator=is_bool)
     epoch = attr.ib(default=None, validator=optional(is_int))
@@ -152,6 +311,28 @@ class Version(object):
 
     @classmethod
     def parse(cls, version, strict=False):
+        """
+        :param version: Version number as defined in `PEP 440`_.
+        :type version: str
+
+        :param strict: Enable strict parsing of the canonical PEP 440 format.
+        :type strict: bool
+
+        .. _`PEP 440`: https://www.python.org/dev/peps/pep-0440/
+
+        :raises ParseError: If version is not valid for the given value of
+            `strict`.
+
+        .. doctest::
+            :options: -IGNORE_EXCEPTION_DETAIL
+
+            >>> Version.parse('1.dev')
+            <Version '1.dev'>
+            >>> Version.parse('1.dev', strict=True)
+            Traceback (most recent call last):
+              ...
+            parver._parse.ParseError: Expected int at position (1, 6) => '1.dev*'.
+        """
         segments = parse(version, strict=strict)
 
         kwargs = dict()
@@ -269,38 +450,64 @@ class Version(object):
 
     @property
     def public(self):
+        """A string representing the public version portion of this
+        :class:`Version` instance.
+        """
         return str(self).split('+', 1)[0]
 
     def base_version(self):
+        """Return a new :class:`Version` instance for the base version of the
+        current instance. The base version is the public version of the project
+        without any pre or post release markers.
 
+        See also: :meth:`clear` and :meth:`replace`.
+        """
         return self.clear(pre=True, post=True, dev=True).replace(local=None)
 
     @property
     def is_prerelease(self):
+        """A boolean value indicating whether this :class:`Version` instance
+        represents a pre-release and/or development release.
+        """
         return self.dev is not None or self.pre is not None
 
     @property
     def is_alpha(self):
+        """A boolean value indicating whether this :class:`Version` instance
+        represents an alpha pre-release.
+        """
         return _normalize_pre_tag(self.pre_tag) == 'a'
 
     @property
     def is_beta(self):
+        """A boolean value indicating whether this :class:`Version` instance
+        represents a beta pre-release.
+        """
         return _normalize_pre_tag(self.pre_tag) == 'b'
 
     @property
     def is_release_candidate(self):
+        """A boolean value indicating whether this :class:`Version` instance
+        represents a release candidate pre-release.
+        """
         return _normalize_pre_tag(self.pre_tag) == 'rc'
 
     @property
     def is_postrelease(self):
+        """A boolean value indicating whether this :class:`Version` instance
+        represents a post-release.
+        """
         return self.post is not None
 
     @property
     def is_devrelease(self):
+        """A boolean value indicating whether this :class:`Version` instance
+        represents a development release.
+        """
         return self.dev is not None
 
     def _attrs_as_init(self):
-        d = attr.asdict(self, filter=lambda attr, val: attr.init)
+        d = attr.asdict(self, filter=lambda attr, _: attr.init)
 
         if self.epoch_implicit:
             d['epoch'] = None
@@ -336,6 +543,11 @@ class Version(object):
         return d
 
     def clear(self, pre=False, post=False, dev=False):
+        """Like :meth:`replace`, but has the ability to **remove** pre-release,
+        post release, and development release segments.
+
+        See also: :meth:`base_version`.
+        """
         d = self._attrs_as_init()
 
         if pre:
@@ -357,6 +569,32 @@ class Version(object):
         return Version(**d)
 
     def replace(self, **kwargs):
+        """Return a new :class:`Version` instance with the same attributes,
+        except for those given as keyword arguments. Arguments have the same
+        meaning as they do when constructing a new :class:`Version` instance
+        manually.
+
+        .. warning::
+
+            Be careful! :class:`Version` treats `None` as an implicit zero, so
+            pre-release, post release and development releases cannot be
+            cleared using this method:
+
+            .. doctest::
+
+                >>> Version.parse('1.3.post0').replace(post=None)
+                <Version '1.3.post'>
+                >>> Version.parse('1.3').replace(post=None)
+                <Version '1.3.post'>
+
+            Use :meth:`clear` instead:
+
+            .. doctest::
+
+                >>> Version.parse('1.3.post0').clear(post=True)
+                <Version '1.3'>
+
+        """
         d = self._attrs_as_init()
 
         if kwargs.get('post_tag', UNSET) is None:
@@ -370,6 +608,29 @@ class Version(object):
         return Version(**d)
 
     def bump_release(self, index):
+        """Return a new :class:`Version` instance with the release number
+        bumped at the given `index`.
+
+        :param index: Index of the release number tuple to bump. It is not
+            limited to the current size of the tuple. Intermediate indices will
+            be set to zero.
+        :type index: int
+
+        :raises TypeError: `index` is not an integer.
+        :raises ValueError: `index` is negative.
+
+        .. doctest::
+
+            >>> v = Version.parse('1.4')
+            >>> v.bump_release(0)
+            <Version '2.0'>
+            >>> v.bump_release(1)
+            <Version '1.5'>
+            >>> v.bump_release(2)
+            <Version '1.4.1'>
+            >>> v.bump_release(3)
+            <Version '1.4.0.1'>
+        """
         if not isinstance(index, int):
             raise TypeError('index must be an integer')
 
@@ -391,6 +652,24 @@ class Version(object):
         return self.replace(release=release)
 
     def bump_pre(self, tag=None):
+        """Return a new :class:`Version` instance with the pre-release number
+        bumped.
+
+        :param tag: Pre-release tag. Required if not already set.
+        :type tag: str
+
+        :raises ValueError: Trying to call ``bump_pre(tag=None)`` on a
+            :class:`Version` instance that is not already a pre-release.
+        :raises ValueError: Calling the method with a `tag` not equal to the
+            current :attr:`post_tag`. See :meth:`replace` instead.
+
+        .. doctest::
+
+            >>> Version.parse('1.4').bump_pre('a')
+            <Version '1.4a0'>
+            >>> Version.parse('1.4b1').bump_pre()
+            <Version '1.4b2'>
+        """
         pre = 0 if self.pre is None else self.pre + 1
 
         if self.pre_tag is None:
@@ -408,12 +687,38 @@ class Version(object):
         return self.replace(pre=pre, pre_tag=tag)
 
     def bump_post(self, tag=UNSET):
+        """Return a new :class:`Version` instance with the post release number
+        bumped.
+
+        :param tag: Post release tag. Will preserve the current tag by default,
+            or use `post` if the instance is not already a post release.
+        :type tag: str
+
+        .. doctest::
+
+            >>> Version.parse('1.4').bump_post()
+            <Version '1.4.post0'>
+            >>> Version.parse('1.4.post0').bump_post(tag=None)
+            <Version '1.4-1'>
+            >>> Version.parse('1.4_post-1').bump_post(tag='rev')
+            <Version '1.4_rev-2'>
+        """
         post = 0 if self.post is None else self.post + 1
         if tag is UNSET and self.post is not None:
             tag = self.post_tag
         return self.replace(post=post, post_tag=tag)
 
     def bump_dev(self):
+        """Return a new :class:`Version` instance with the development release
+        number bumped.
+
+        .. doctest::
+
+            >>> Version.parse('1.4').bump_dev()
+            <Version '1.4.dev0'>
+            >>> Version.parse('1.4_dev1').bump_dev()
+            <Version '1.4_dev2'>
+        """
         dev = 0 if self.dev is None else self.dev + 1
         return self.replace(dev=dev)
 

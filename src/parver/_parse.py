@@ -201,8 +201,8 @@ class VersionVisitor(PTNodeVisitor):
     visit_xdot = noop
 
 
-class ParseError(Exception):
-    pass
+class ParseError(ValueError):
+    """Raised when parsing an invalid version number."""
 
 
 def parse(version, strict=False):
