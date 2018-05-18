@@ -36,13 +36,13 @@ extras_require = {
 setup(
     name='parver',
     version=about['__version__'],
-    description='Parse and manipulate version numbers.',
+    description=about['__description__'],
     url='https://github.com/RazerM/parver',
     long_description=LONG_DESC,
     long_description_content_type='text/x-rst',
-    author='Frazer McLean',
-    author_email='frazer@frazermclean.co.uk',
-    license='MIT',
+    author=about['__author__'],
+    author_email=about['__email__'],
+    license=about['__license__'],
     packages=find_packages('src'),
     package_dir={'': 'src'},
     install_requires=[
