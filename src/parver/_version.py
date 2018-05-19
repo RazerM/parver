@@ -202,13 +202,19 @@ class Version(object):
 
     .. _`Version epoch`: https://www.python.org/dev/peps/pep-0440/#version-epochs
     .. _`Pre-release`: https://www.python.org/dev/peps/pep-0440/#pre-releases
-    .. _`implicit pre-release number`: https://www.python.org/dev/peps/pep-0440/#implicit-pre-release-number
+    .. _`implicit pre-release number`: https://www.python.org/dev/peps/
+        pep-0440/#implicit-pre-release-number
     .. _`Post-release`: https://www.python.org/dev/peps/pep-0440/#post-releases
-    .. _`implicit post release number`: https://www.python.org/dev/peps/pep-0440/#implicit-post-release-number
-    .. _`Developmental release`: https://www.python.org/dev/peps/pep-0440/#developmental-releases
-    .. _`implicit development release number`: https://www.python.org/dev/peps/pep-0440/#implicit-development-release-number
-    .. _`Local version`: https://www.python.org/dev/peps/pep-0440/#local-version-identifiers
-    .. _`implicit post release`: https://www.python.org/dev/peps/pep-0440/#implicit-post-releases
+    .. _`implicit post release number`: https://www.python.org/dev/peps/
+        pep-0440/#implicit-post-release-number
+    .. _`Developmental release`: https://www.python.org/dev/peps/pep-0440/
+        #developmental-releases
+    .. _`implicit development release number`: https://www.python.org/dev/peps/
+        pep-0440/#implicit-development-release-number
+    .. _`Local version`: https://www.python.org/dev/peps/pep-0440/
+        #local-version-identifiers
+    .. _`implicit post release`: https://www.python.org/dev/peps/pep-0440/
+        #implicit-post-releases
 
     """
     release = attr.ib(converter=force_tuple, validator=is_seq)
