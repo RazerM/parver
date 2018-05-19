@@ -38,6 +38,9 @@ setup(
     version=about['__version__'],
     description=about['__description__'],
     url='https://github.com/RazerM/parver',
+    project_urls={
+        "Documentation": "https://parver.readthedocs.io",
+    },
     long_description=LONG_DESC,
     long_description_content_type='text/x-rst',
     author=about['__author__'],
