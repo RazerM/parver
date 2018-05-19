@@ -1,5 +1,10 @@
 # coding: utf-8
-"""Tests borrowed from https://github.com/pypa/packaging"""
+"""The tests in this file have been adapted from the excellent test suite in
+packaging.version. See https://github.com/pypa/packaging
+
+Copyright (c) Donald Stufft and individual contributors.
+https://github.com/pypa/packaging/blob/master/LICENSE
+"""
 from __future__ import absolute_import, division, print_function
 
 import itertools
