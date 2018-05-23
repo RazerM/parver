@@ -258,7 +258,7 @@ class Version(object):
             raise ValueError('Cannot set pre_sep1 or pre_sep2 without pre_tag.')
 
         if self.post_tag is None:
-            if self.post is UNSET:
+            if self.post is UNSET or self.post is None:
                 raise ValueError(
                     "Implicit post releases (post_tag=None) require a numerical "
                     "value for 'post' argument.")

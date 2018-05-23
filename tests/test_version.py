@@ -106,6 +106,7 @@ def test_init(vargs, s):
     dict(pre_sep2='.'),
     dict(pre_sep1='.', pre_sep2='.'),
     dict(post_tag=None),
+    dict(post_tag=None, post=None),
     dict(post_tag=None, post_sep1='.'),
     dict(post_tag=None, post_sep2='.'),
     dict(post_tag=None, post_sep1='.', post_sep2='.'),

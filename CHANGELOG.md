@@ -15,6 +15,8 @@
   ```
 
   The first form now raises a `ValueError`.
+- Don't allow `post=None` when `post_tag=None`. Implicit post releases
+  cannot have implicit post release numbers.
 
 ## [0.1][] - 2018-05-20
 
