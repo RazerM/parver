@@ -1,8 +1,9 @@
 # coding: utf-8
 from __future__ import absolute_import, division, print_function
 
-from ._version import Version
+from ._about import __author__, __email__, __version__
 from ._parse import ParseError
+from ._version import Version
 
 __all__ = ('Version', 'ParseError')
 
