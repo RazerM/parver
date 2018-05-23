@@ -268,6 +268,11 @@ class Version(object):
                     'post_sep1 and post_sep2 cannot be set for implicit post '
                     'releases (post_tag=None)')
 
+            if self.pre_implicit:
+                raise ValueError(
+                    'post_tag cannot be None with an implicit pre-release '
+                    '(pre=None).')
+
             set('post_sep1', '-')
 
         if self.post is not UNSET:

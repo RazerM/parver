@@ -489,3 +489,8 @@ def test_is_release_candidate(version):
     assert not v.is_alpha
     assert not v.is_beta
     assert v.is_release_candidate
+
+
+def test_ambiguous():
+    with pytest.raises(ValueError, match='post_tag.*pre'):
+        Version(release=1, pre_tag='rc', post=2, post_tag=None)
