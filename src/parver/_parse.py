@@ -194,12 +194,6 @@ class VersionVisitor(PTNodeVisitor):
     def visit_sep(self, node, children):
         return Sep(node.value)
 
-    def noop(self, node, children):
-        pass
-
-    visit_xsep = noop
-    visit_xdot = noop
-
 
 class ParseError(ValueError):
     """Raised when parsing an invalid version number."""
