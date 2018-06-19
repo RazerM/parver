@@ -1,3 +1,7 @@
+.. image:: https://img.shields.io/pypi/v/parver.svg
+   :target: https://pypi.org/project/parver/
+   :alt: PyPI
+
 .. image:: https://img.shields.io/badge/docs-read%20now-blue.svg
    :target: https://parver.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
