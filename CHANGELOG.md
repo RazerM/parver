@@ -3,7 +3,7 @@
 ## [Unreleased][unreleased]
 N/A
 
-## [0.1.1][]
+## [0.1.1][] - 2018-06-19
 ### Fixed
 - `Version` accepted `pre=None` and `post_tag=None`, which produces an
   ambiguous version number. This is because an implicit pre-release
