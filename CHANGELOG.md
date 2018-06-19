@@ -1,6 +1,9 @@
 # Change Log
 
 ## [Unreleased][unreleased]
+N/A
+
+## [0.1.1][]
 ### Fixed
 - `Version` accepted `pre=None` and `post_tag=None`, which produces an
   ambiguous version number. This is because an implicit pre-release
@@ -22,6 +25,6 @@
 
 First release.
 
-[unreleased]: https://github.com/RazerM/parver/compare/0.1...HEAD
-<!-- [0.1.1]: https://github.com/RazerM/parver/compare/0.1...0.1.1 -->
+[unreleased]: https://github.com/RazerM/parver/compare/0.1.1...HEAD
+[0.1.1]: https://github.com/RazerM/parver/compare/0.1...0.1.1
 [0.1]: https://github.com/RazerM/parver/compare/f69c63c52604823653ad2a24651bcaab3de1cce8...0.1
