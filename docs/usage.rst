@@ -4,9 +4,9 @@ Usage
 
 .. py:currentmodule:: parver
 
-``parver`` provides the :class:`Version` class. It is immutable, so methods which
-you might expect to mutate instead return a new instance with the requested
-modifications:
+``parver`` provides the :class:`Version` class. It is immutable, so methods
+which you might expect to mutate instead return a new instance with the
+requested modifications:
 
 .. testsetup::
 
@@ -23,9 +23,9 @@ modifications:
     <Version '1.4'>
     >>> assert v == Version(release=(1, 3))
 
-Note here that we used an index to tell ``parver`` which number to bump. You may
-typically refer to indices 0, 1, and 2 as major, minor, and patch releases, but
-this depends on which versioning convention your project uses.
+Note here that we used an index to tell ``parver`` which number to bump. You
+may typically refer to indices 0, 1, and 2 as major, minor, and patch releases,
+but this depends on which versioning convention your project uses.
 
 Development, pre-release, and post releases are also supported:
 
@@ -88,8 +88,8 @@ parsing them. In this example, there are a couple of non-standard elements:
 
 Note that normalization **does not** affect equality (or ordering).
 
-Also note that ``parver`` can round-trip [#]_ your version strings; non-standard
-parameters are kept as-is, even when you mutate:
+Also note that ``parver`` can round-trip [#]_ your version strings;
+non-standard parameters are kept as-is, even when you mutate:
 
 .. doctest::
 
