@@ -290,7 +290,7 @@ texinfo_documents = [
 
 # intersphinx
 intersphinx_mapping = {
-    'python': ('http://docs.python.org/3', None),
+    'python': ('https://docs.python.org/3', None),
 }
 
 autodoc_member_order = 'bysource'
