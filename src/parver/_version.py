@@ -11,19 +11,9 @@ import attr
 import six
 from attr.validators import in_, instance_of, optional
 
-from ._helpers import UNSET, Infinity
+from ._helpers import UNSET, Infinity, force_tuple
 from ._parse import parse
 from . import _segments as segment
-
-
-def force_tuple(n):
-    if isinstance(n, six.string_types):
-        raise TypeError('Expected tuple or int.')
-    if not isinstance(n, Sequence):
-        return n,
-    if not isinstance(n, tuple):
-        return tuple(n)
-    return n
 
 
 POST_TAGS = {'post', 'rev', 'r'}

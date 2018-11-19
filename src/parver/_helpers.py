@@ -1,6 +1,10 @@
 # coding: utf-8
 from __future__ import absolute_import, division, print_function
 
+from collections import Iterable
+
+import six
+
 
 class UnsetType(object):
     def __repr__(self):
@@ -89,3 +93,13 @@ def fixup_module_metadata(module_name, namespace):
     for objname in namespace["__all__"]:
         obj = namespace[objname]
         fix_one(obj)
+
+
+def force_tuple(n):
+    if isinstance(n, six.string_types):
+        raise TypeError('Expected tuple or int.')
+    if not isinstance(n, Iterable):
+        return n,
+    if not isinstance(n, tuple):
+        return tuple(n)
+    return n

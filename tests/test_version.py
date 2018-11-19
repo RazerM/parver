@@ -449,9 +449,20 @@ def test_bump_dev(before, after):
     assert str(Version.parse(before).bump_dev()) == after
 
 
-def test_release_tuple():
-    v = Version(release=[1, 2])
+@pytest.mark.parametrize('arg, expected', [
+    (1, (1,)),
+    ([1], (1,)),
+    ((1, 2), (1, 2)),
+    ([1, 2], (1, 2)),
+    # range is a Sequence
+    (range(1, 3), (1, 2)),
+    # An iterable that is not also a sequence
+    ((x for x in range(1, 3)), (1, 2)),
+])
+def test_release_tuple(arg, expected):
+    v = Version(release=arg)
     assert isinstance(v.release, tuple)
+    assert v.release == expected
 
 
 @pytest.mark.parametrize('version', [

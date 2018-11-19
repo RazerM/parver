@@ -1,7 +1,8 @@
 # Change Log
 
 ## [Unreleased][unreleased]
-N/A
+### Added
+- The `release` parameter to `Version` now accepts any iterable.
 
 ## [0.1.1][] - 2018-06-19
 ### Fixed
