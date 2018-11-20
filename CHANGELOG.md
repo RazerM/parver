@@ -1,6 +1,9 @@
 # Change Log
 
 ## [Unreleased][unreleased]
+N/A
+
+## [0.2][] - 2018-11-21
 ### Added
 - `Version.bump_release_to` method for control over the value to bump to, e.g.
   for [CalVer][].
@@ -39,6 +42,7 @@
 
 First release.
 
-[unreleased]: https://github.com/RazerM/parver/compare/0.1.1...HEAD
+[unreleased]: https://github.com/RazerM/parver/compare/0.2...HEAD
+[0.2]: https://github.com/RazerM/parver/compare/0.1.1...0.2
 [0.1.1]: https://github.com/RazerM/parver/compare/0.1...0.1.1
 [0.1]: https://github.com/RazerM/parver/compare/f69c63c52604823653ad2a24651bcaab3de1cce8...0.1
