@@ -103,3 +103,60 @@ def force_tuple(n):
     if not isinstance(n, tuple):
         return tuple(n)
     return n
+
+
+def doc_signature(signature):
+    def decorator(fn):
+        fn.__parverdoc_signature__ = signature
+        return fn
+    return decorator
+
+
+def kwonly_args(kws, required, withdefaults=(), leftovers=False):
+    """
+
+    Based on the snippet by Eric Snow
+    http://code.activestate.com/recipes/577940
+
+    SPDX-License-Identifier: MIT
+    """
+
+    if hasattr(withdefaults, "items"):
+        # allows for OrderedDict to be passed
+        withdefaults = withdefaults.items()
+
+    kwonly = []
+
+    # extract the required keyword-only arguments
+    missing = []
+    for name in required:
+        if name not in kws:
+            missing.append(name)
+        else:
+            kwonly.append(kws.pop(name))
+
+    # validate required keyword-only arguments
+    if missing:
+        if len(missing) > 2:
+            end = "s: %s, and %s" % (", ".join(missing[:-1]), missing[-1])
+        elif len(missing) == 2:
+            end = "s: %s and %s" % tuple(missing)
+        else:
+            end = ": %s" % tuple(missing)
+
+        msg = "missing %s required keyword-only argument%s"
+        raise TypeError(msg % (len(missing), end))
+
+    # handle the withdefaults
+    for name, value in withdefaults:
+        if name not in kws:
+            kwonly.append(value)
+        else:
+            kwonly.append(kws.pop(name))
+
+    # handle any leftovers
+    if not leftovers and kws:
+        msg = "got an unexpected keyword argument '%s'"
+        raise TypeError(msg % (kws.keys()[0]))
+
+    return [kws] + kwonly

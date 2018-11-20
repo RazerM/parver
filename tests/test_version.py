@@ -395,7 +395,46 @@ def test_clear(before, kwargs, after):
     ('4.3.2.1', 2, '4.3.3.0'),
 ])
 def test_bump_release(before, index, after):
-    assert str(Version.parse(before).bump_release(index)) == after
+    assert str(Version.parse(before).bump_release(index=index)) == after
+
+
+@pytest.mark.parametrize('before, index, value, after', [
+    ('2', 0, 1, '1'),
+    ('2', 0, 2, '2'),
+    ('2', 0, 3, '3'),
+    ('2', 1, 3, '2.3'),
+    ('2', 2, 3, '2.0.3'),
+    ('2.4', 0, 4, '4.0'),
+    ('2.4', 1, 6, '2.6'),
+    ('2.4', 2, 6, '2.4.6'),
+    ('2.4', 3, 6, '2.4.0.6'),
+    ('4.3.2.1', 1, 5, '4.5.0.0'),
+    # e.g. CalVer
+    ('2017.4', 0, 2018, '2018.0'),
+    ('17.5.1', 0, 18, '18.0.0'),
+    ('18.0.0', 1, 2, '18.2.0'),
+])
+def test_bump_release_to(before, index, value, after):
+    v = Version.parse(before).bump_release_to(index=index, value=value)
+    assert str(v) == after
+
+
+@pytest.mark.parametrize('before, index, value, after', [
+    ('2', 0, 1, '1'),
+    ('2', 0, 2, '2'),
+    ('2', 0, 3, '3'),
+    ('2', 1, 3, '2.3'),
+    ('2', 2, 3, '2.0.3'),
+    ('2.4', 0, 4, '4.4'),
+    ('2.4', 1, 6, '2.6'),
+    ('2.4', 2, 6, '2.4.6'),
+    ('2.4', 3, 6, '2.4.0.6'),
+    ('2.0.4', 1, 3, '2.3.4'),
+    ('4.3.2.1', 1, 5, '4.5.2.1'),
+])
+def test_set_release(before, index, value, after):
+    v = Version.parse(before).set_release(index=index, value=value)
+    assert str(v) == after
 
 
 @pytest.mark.parametrize('index, exc', [
@@ -405,7 +444,7 @@ def test_bump_release(before, index, after):
 ])
 def test_bump_release_error(index, exc):
     with pytest.raises(exc):
-        print(Version(release=1).bump_release(index))
+        print(Version(release=1).bump_release(index=index))
 
 
 @pytest.mark.parametrize('before, tag, after', [

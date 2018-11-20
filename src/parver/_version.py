@@ -11,7 +11,7 @@ import attr
 import six
 from attr.validators import in_, instance_of, optional
 
-from ._helpers import UNSET, Infinity, force_tuple
+from ._helpers import UNSET, Infinity, doc_signature, force_tuple, kwonly_args
 from ._parse import parse
 from . import _segments as segment
 
@@ -608,7 +608,35 @@ class Version(object):
         d.update(kwargs)
         return Version(**d)
 
-    def bump_release(self, index):
+    def _set_release(self, index, value=None, bump=True):
+        if not isinstance(index, int):
+            raise TypeError('index must be an integer')
+
+        if index < 0:
+            raise ValueError('index cannot be negative')
+
+        release = list(self.release)
+        new_len = index + 1
+
+        if len(release) < new_len:
+            release.extend(itertools.repeat(0, new_len - len(release)))
+
+        def new_parts(i, n):
+            if i < index:
+                return n
+            if i == index:
+                if value is None:
+                    return n + 1
+                return value
+            if bump:
+                return 0
+            return n
+
+        release = itertools.starmap(new_parts, enumerate(release))
+        return self.replace(release=release)
+
+    @doc_signature('(*, index)')
+    def bump_release(self, **kwargs):
         """Return a new :class:`Version` instance with the release number
         bumped at the given `index`.
 
@@ -623,34 +651,109 @@ class Version(object):
         .. doctest::
 
             >>> v = Version.parse('1.4')
-            >>> v.bump_release(0)
+            >>> v.bump_release(index=0)
             <Version '2.0'>
-            >>> v.bump_release(1)
+            >>> v.bump_release(index=1)
             <Version '1.5'>
-            >>> v.bump_release(2)
+            >>> v.bump_release(index=2)
             <Version '1.4.1'>
-            >>> v.bump_release(3)
+            >>> v.bump_release(index=3)
             <Version '1.4.0.1'>
+
+        .. seealso::
+
+            For more control over the value that is bumped to, see
+            :meth:`bump_release_to`.
+
+            For fine-grained control, :meth:`set_release` may be used to set
+            the value at a specific index without setting subsequenct indices
+            to zero.
         """
-        if not isinstance(index, int):
-            raise TypeError('index must be an integer')
+        _, index = kwonly_args(kwargs, ('index',))
+        return self._set_release(index=index)
 
-        if index < 0:
-            raise ValueError('index cannot be negative')
+    @doc_signature('(*, index, value)')
+    def bump_release_to(self, **kwargs):
+        """Return a new :class:`Version` instance with the release number
+        bumped at the given `index` to `value`. May be used for versioning
+        schemes such as `CalVer`_.
 
-        release = list(self.release)
-        new_len = index + 1
+        .. _`CalVer`: https://calver.org
 
-        if len(release) < new_len:
-            release.extend(itertools.repeat(0, new_len - len(release)))
+        :param index: Index of the release number tuple to bump. It is not
+            limited to the current size of the tuple. Intermediate indices will
+            be set to zero.
+        :type index: int
+        :param value: Value to bump to. This may be any value, but subsequent
+            indices will be set to zero like a normal version bump.
+        :type value: int
 
-        for i, value in enumerate(release):
-            if i == index:
-                release[i] += 1
-            elif i > index:
-                release[i] = 0
+        :raises TypeError: `index` is not an integer.
+        :raises ValueError: `index` is negative.
 
-        return self.replace(release=release)
+        .. testsetup::
+
+            import datetime
+
+        .. doctest::
+
+            >>> v = Version.parse('18.4')
+            >>> v.bump_release_to(index=0, value=20)
+            <Version '20.0'>
+            >>> v.bump_release_to(index=1, value=10)
+            <Version '18.10'>
+
+        For a project using `CalVer`_ with format ``YYYY.MM.MICRO``, this
+        method could be used to set the date parts:
+
+        .. doctest::
+
+            >>> v = Version.parse('2018.4.1')
+            >>> v = v.bump_release_to(index=0, value=2018)
+            >>> v = v.bump_release_to(index=1, value=10)
+            >>> v
+            <Version '2018.10.0'>
+
+        .. seealso::
+
+            For typical use cases, see :meth:`bump_release`.
+
+            For fine-grained control, :meth:`set_release` may be used to set
+            the value at a specific index without setting subsequenct indices
+            to zero.
+        """
+        _, index, value = kwonly_args(kwargs, ('index', 'value'))
+        return self._set_release(index=index, value=value)
+
+    @doc_signature('(*, index, value)')
+    def set_release(self, **kwargs):
+        """Return a new :class:`Version` instance with the release number
+        at the given `index` set to `value`.
+
+        :param index: Index of the release number tuple to set. It is not
+            limited to the current size of the tuple. Intermediate indices will
+            be set to zero.
+        :type index: int
+        :param value: Value to set.
+        :type value: int
+
+        :raises TypeError: `index` is not an integer.
+        :raises ValueError: `index` is negative.
+
+        .. doctest::
+
+            >>> v = Version.parse('1.2.3')
+            >>> v.set_release(index=0, value=3)
+            <Version '3.2.3'>
+            >>> v.set_release(index=1, value=4)
+            <Version '1.4.3'>
+
+        .. seealso::
+
+            For typical use cases, see :meth:`bump_release`.
+        """
+        _, index, value = kwonly_args(kwargs, ('index', 'value'))
+        return self._set_release(index=index, value=value, bump=False)
 
     def bump_pre(self, tag=None):
         """Return a new :class:`Version` instance with the pre-release number

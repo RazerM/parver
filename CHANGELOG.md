@@ -2,6 +2,16 @@
 
 ## [Unreleased][unreleased]
 ### Added
+- `Version.bump_release_to` method for control over the value to bump to, e.g.
+  for [CalVer][].
+- `Version.set_release` method for finer control over release values without
+  resetting subsequent indices to zero.
+  
+[CalVer]: (https://calver.org)
+
+### Changed
+- **BREAKING CHANGE**. The argument to `Version.bump_release` is now a keyword
+  only argument, e.g. `Version.bump_release(index=0)`.
 - The `release` parameter to `Version` now accepts any iterable.
 
 ## [0.1.1][] - 2018-06-19
