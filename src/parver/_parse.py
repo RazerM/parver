@@ -9,7 +9,7 @@ from arpeggio.cleanpeg import ParserPEG
 from ._helpers import UNSET
 from . import _segments as segment
 
-canonical = '''
+canonical = r'''
     version = epoch? release pre? post? dev? local? EOF
     epoch = int "!"
     release = int (dot int)*
@@ -26,7 +26,7 @@ canonical = '''
     alpha = r'[a-zA-Z0-9]'
 '''
 
-permissive = '''
+permissive = r'''
     version = v? epoch? release pre? (post / post_implicit)? dev? local? EOF
     v = "v"
     epoch = int "!"

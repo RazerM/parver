@@ -6,13 +6,16 @@
   for [CalVer][].
 - `Version.set_release` method for finer control over release values without
   resetting subsequent indices to zero.
-  
-[CalVer]: (https://calver.org)
 
 ### Changed
 - **BREAKING CHANGE**. The argument to `Version.bump_release` is now a keyword
   only argument, e.g. `Version.bump_release(index=0)`.
 - The `release` parameter to `Version` now accepts any iterable.
+
+### Fixed
+- Deprecation warnings about invalid escape sequences in `_parse.py`.
+  
+[CalVer]: (https://calver.org)
 
 ## [0.1.1][] - 2018-06-19
 ### Fixed
