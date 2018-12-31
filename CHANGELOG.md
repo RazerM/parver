@@ -1,6 +1,9 @@
 # Change Log
 
 ## [Unreleased][unreleased]
+N/A
+
+## [0.2.1][] - 2018-12-31
 ### Fixed
 - On Python 2, `Version` was incorrectly rejecting `long` integer values.
 
@@ -43,7 +46,8 @@
 
 First release.
 
-[unreleased]: https://github.com/RazerM/parver/compare/0.2...HEAD
+[unreleased]: https://github.com/RazerM/parver/compare/0.2.1...HEAD
+[0.2.1]: https://github.com/RazerM/parver/compare/0.2...0.2.1
 [0.2]: https://github.com/RazerM/parver/compare/0.1.1...0.2
 [0.1.1]: https://github.com/RazerM/parver/compare/0.1...0.1.1
 [0.1]: https://github.com/RazerM/parver/compare/f69c63c52604823653ad2a24651bcaab3de1cce8...0.1

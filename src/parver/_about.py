@@ -1,7 +1,7 @@
 # coding: utf-8
 # This file is imported from __init__.py and exec'd from setup.py
 
-__version__ = '0.2.0'
+__version__ = '0.2.1'
 __description__ = 'Parse and manipulate version numbers.'
 
 __license__ = 'MIT'
