@@ -35,7 +35,7 @@ validate_pre_tag = optional(in_(PRE_TAGS))
 validate_sep = optional(in_(SEPS))
 validate_sep_or_unset = unset_or(optional(in_(SEPS)))
 is_bool = instance_of(bool)
-is_int = instance_of(int)
+is_int = instance_of(six.integer_types)
 is_str = instance_of(six.string_types)
 is_seq = instance_of(Sequence)
 

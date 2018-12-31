@@ -1,7 +1,8 @@
 # Change Log
 
 ## [Unreleased][unreleased]
-N/A
+### Fixed
+- On Python 2, `Version` was incorrectly rejecting `long` integer values.
 
 ## [0.2][] - 2018-11-21
 ### Added
