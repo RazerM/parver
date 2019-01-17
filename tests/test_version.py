@@ -137,6 +137,11 @@ def test_validation_type(kwargs):
         print(Version(**kwargs))
 
 
+def test_release_validation():
+    with pytest.raises(ValueError):
+        Version(release=())
+
+
 @pytest.mark.parametrize('kwargs', [
     dict(pre_tag='alph'),
     dict(pre_tag='a', pre_sep1='x'),

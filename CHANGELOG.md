@@ -2,6 +2,7 @@
 
 ## [Unreleased][unreleased]
 ### Fixed
+- `Version` incorrectly allowed an empty release sequence.
 - `Version` rejects `bool` where it expects `int`.
 
 ## [0.2.1][] - 2018-12-31

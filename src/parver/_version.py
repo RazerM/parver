@@ -48,6 +48,11 @@ is_str = instance_of(six.string_types)
 is_seq = instance_of(Sequence)
 
 
+def is_truthy(instance, attribute, value):
+    if not value:
+        raise ValueError('release cannot be empty')
+
+
 @attr.s(frozen=True, repr=False, cmp=False)
 class Version(object):
     """
@@ -215,7 +220,7 @@ class Version(object):
         #implicit-post-releases
 
     """
-    release = attr.ib(converter=force_tuple, validator=is_seq)
+    release = attr.ib(converter=force_tuple, validator=[is_seq, is_truthy])
     v = attr.ib(default=False, validator=is_bool)
     epoch = attr.ib(default=None, validator=[not_bool, optional(is_int)])
     pre_tag = attr.ib(default=None, validator=validate_pre_tag)
