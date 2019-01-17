@@ -120,6 +120,7 @@ def test_invalid(kwargs):
 @pytest.mark.parametrize('kwargs', [
     dict(release='1'),
     dict(v=3),
+    dict(post=True),
     dict(epoch='1'),
     dict(pre_tag='b', pre='2'),
     dict(post='3'),

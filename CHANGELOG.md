@@ -1,7 +1,8 @@
 # Change Log
 
 ## [Unreleased][unreleased]
-N/A
+### Fixed
+- `Version` rejects `bool` where it expects `int`.
 
 ## [0.2.1][] - 2018-12-31
 ### Fixed

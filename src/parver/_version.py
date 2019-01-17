@@ -30,6 +30,14 @@ def unset_or(validator):
     return validate
 
 
+def not_bool(inst, attr, value):
+    if isinstance(value, bool):
+        raise TypeError(
+            "'{name}' must not be a bool (got {value!r})"
+            .format(name=attr.name, value=value)
+        )
+
+
 validate_post_tag = unset_or(optional(in_(POST_TAGS)))
 validate_pre_tag = optional(in_(PRE_TAGS))
 validate_sep = optional(in_(SEPS))
@@ -209,11 +217,11 @@ class Version(object):
     """
     release = attr.ib(converter=force_tuple, validator=is_seq)
     v = attr.ib(default=False, validator=is_bool)
-    epoch = attr.ib(default=None, validator=optional(is_int))
+    epoch = attr.ib(default=None, validator=[not_bool, optional(is_int)])
     pre_tag = attr.ib(default=None, validator=validate_pre_tag)
-    pre = attr.ib(default=None, validator=optional(is_int))
-    post = attr.ib(default=UNSET, validator=unset_or(optional(is_int)))
-    dev = attr.ib(default=UNSET, validator=unset_or(optional(is_int)))
+    pre = attr.ib(default=None, validator=[not_bool, optional(is_int)])
+    post = attr.ib(default=UNSET, validator=[not_bool, unset_or(optional(is_int))])
+    dev = attr.ib(default=UNSET, validator=[not_bool, unset_or(optional(is_int))])
     local = attr.ib(default=None, validator=optional(is_str))
 
     pre_sep1 = attr.ib(default=None, validator=validate_sep)
