@@ -114,14 +114,13 @@ def doc_signature(signature):
 
 def kwonly_args(kws, required, withdefaults=(), leftovers=False):
     """
-
     Based on the snippet by Eric Snow
     http://code.activestate.com/recipes/577940
 
     SPDX-License-Identifier: MIT
     """
 
-    if hasattr(withdefaults, "items"):
+    if hasattr(withdefaults, 'items'):
         # allows for OrderedDict to be passed
         withdefaults = withdefaults.items()
 
@@ -138,13 +137,13 @@ def kwonly_args(kws, required, withdefaults=(), leftovers=False):
     # validate required keyword-only arguments
     if missing:
         if len(missing) > 2:
-            end = "s: %s, and %s" % (", ".join(missing[:-1]), missing[-1])
+            end = 's: %s, and %s' % (', '.join(missing[:-1]), missing[-1])
         elif len(missing) == 2:
-            end = "s: %s and %s" % tuple(missing)
+            end = 's: %s and %s' % tuple(missing)
         else:
-            end = ": %s" % tuple(missing)
+            end = ': %s' % tuple(missing)
 
-        msg = "missing %s required keyword-only argument%s"
+        msg = 'missing %s required keyword-only argument%s'
         raise TypeError(msg % (len(missing), end))
 
     # handle the withdefaults
