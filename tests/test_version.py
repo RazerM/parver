@@ -551,3 +551,27 @@ def test_is_release_candidate(version):
 def test_ambiguous():
     with pytest.raises(ValueError, match='post_tag.*pre'):
         Version(release=1, pre_tag='rc', post=2, post_tag=None)
+
+
+@pytest.mark.parametrize('before, after, kwargs', [
+    ('1.0', '1', dict()),
+    ('1.0.0', '1', dict()),
+    ('1.0.0', '1.0', dict(min_length=2)),
+    ('1', '1.0', dict(min_length=2)),
+    ('0.0', '0', dict()),
+    ('1.0.2', '1.0.2', dict()),
+    ('1.0.2', '1.0.2', dict(min_length=1)),
+    ('1.0.2.0', '1.0.2', dict()),
+    ('1.2.0', '1.2', dict()),
+])
+def test_truncate(before, after, kwargs):
+    v = Version.parse(before).truncate(**kwargs)
+    assert str(v) == after
+
+
+def test_truncate_error():
+    with pytest.raises(TypeError, match='min_length'):
+        Version.parse('1').truncate(min_length='banana')
+
+    with pytest.raises(ValueError, match='min_length'):
+        Version.parse('1').truncate(min_length=0)

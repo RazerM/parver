@@ -1,6 +1,9 @@
 # Change Log
 
 ## [Unreleased][unreleased]
+### Added
+- `Version.truncate` method to remove trailing zeros from the release segment.
+
 ### Fixed
 - `Version` incorrectly allowed an empty release sequence.
 - `Version` rejects `bool` where it expects `int`.

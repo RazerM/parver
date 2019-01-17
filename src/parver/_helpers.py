@@ -1,7 +1,7 @@
 # coding: utf-8
 from __future__ import absolute_import, division, print_function
 
-from collections import Iterable
+from collections import Iterable, deque
 
 import six
 
@@ -159,3 +159,14 @@ def kwonly_args(kws, required, withdefaults=(), leftovers=False):
         raise TypeError(msg % (kws.keys()[0]))
 
     return [kws] + kwonly
+
+
+def last(iterable, **kwargs):
+    _, default = kwonly_args(kwargs, (), dict(default=UNSET))
+
+    try:
+        return deque(iterable, maxlen=1).pop()
+    except IndexError:
+        if default is UNSET:
+            raise
+        return default

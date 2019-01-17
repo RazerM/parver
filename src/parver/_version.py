@@ -11,10 +11,10 @@ import attr
 import six
 from attr.validators import in_, instance_of, optional
 
-from ._helpers import UNSET, Infinity, doc_signature, force_tuple, kwonly_args
-from ._parse import parse
 from . import _segments as segment
-
+from ._helpers import (
+    UNSET, Infinity, doc_signature, force_tuple, kwonly_args, last)
+from ._parse import parse
 
 POST_TAGS = {'post', 'rev', 'r'}
 SEPS = {'.', '-', '_'}
@@ -129,7 +129,7 @@ class Version(object):
 
         A tuple of integers giving the components of the release segment of
         this :class:`Version` instance; that is, the ``1.2.3`` part of the
-        version number, including trailing zeroes but not including the epoch
+        version number, including trailing zeros but not including the epoch
         or any prerelease/development/postrelease suffixes
 
     .. attribute:: v
@@ -838,6 +838,41 @@ class Version(object):
         """
         dev = 0 if self.dev is None else self.dev + 1
         return self.replace(dev=dev)
+
+    @doc_signature('(*, min_length=1)')
+    def truncate(self, **kwargs):
+        """Return a new :class:`Version` instance with trailing zeros removed
+        from the release segment.
+
+        :param min_length: Minimum number of parts to keep.
+        :type min_length: int
+
+        .. doctest::
+
+            >>> Version.parse('0.1.0').truncate()
+            <Version '0.1'>
+            >>> Version.parse('1.0.0').truncate(min_length=2)
+            <Version '1.0'>
+            >>> Version.parse('1').truncate(min_length=2)
+            <Version '1.0'>
+        """
+        _, min_length = kwonly_args(kwargs, (), dict(min_length=1))
+
+        if not isinstance(min_length, int):
+            raise TypeError('min_length must be an integer')
+
+        if min_length < 1:
+            raise ValueError('min_length must be positive')
+
+        release = list(self.release)
+        if len(release) < min_length:
+            release.extend(itertools.repeat(0, min_length - len(release)))
+
+        last_nonzero = max(
+            last((i for i, n in enumerate(release) if n), default=0),
+            min_length - 1,
+        )
+        return self.replace(release=release[:last_nonzero + 1])
 
 
 def _normalize_pre_tag(pre_tag):
