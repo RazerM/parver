@@ -243,15 +243,15 @@ class Version(object):
     _key = attr.ib(init=False)
 
     def __attrs_post_init__(self):
-        set = partial(object.__setattr__, self)
+        set_ = partial(object.__setattr__, self)
 
         if self.epoch is None:
-            set('epoch', 0)
-            set('epoch_implicit', True)
+            set_('epoch', 0)
+            set_('epoch_implicit', True)
 
         if self.pre_tag is not None and self.pre is None:
-            set('pre', 0)
-            set('pre_implicit', True)
+            set_('pre', 0)
+            set_('pre_implicit', True)
 
         if self.pre is not None and self.pre_tag is None:
             raise ValueError('Must set pre_tag if pre is given.')
@@ -276,44 +276,44 @@ class Version(object):
                     'post_tag cannot be None with an implicit pre-release '
                     '(pre=None).')
 
-            set('post_sep1', '-')
+            set_('post_sep1', '-')
 
         if self.post is not UNSET:
             if self.post_tag is UNSET:
-                set('post_tag', 'post')
+                set_('post_tag', 'post')
             if self.post is None:
-                set('post_implicit', True)
-                set('post', 0)
+                set_('post_implicit', True)
+                set_('post', 0)
 
         if self.post_tag is not UNSET and self.post is UNSET:
-            set('post_implicit', True)
-            set('post', 0)
+            set_('post_implicit', True)
+            set_('post', 0)
 
         if self.dev is None:
-            set('dev_implicit', True)
-            set('dev', 0)
+            set_('dev_implicit', True)
+            set_('dev', 0)
 
         if self.post is UNSET:
-            set('post', None)
+            set_('post', None)
 
         if self.post_tag is UNSET:
-            set('post_tag', None)
+            set_('post_tag', None)
 
         if self.post_sep1 is UNSET:
-            set('post_sep1', None if self.post is None else '.')
+            set_('post_sep1', None if self.post is None else '.')
         if self.post_sep2 is UNSET:
-            set('post_sep2', None)
+            set_('post_sep2', None)
 
         if self.dev is UNSET:
-            set('dev', None)
+            set_('dev', None)
 
         if self.dev_sep is UNSET:
-            set('dev_sep', None if self.dev is None else '.')
+            set_('dev_sep', None if self.dev is None else '.')
 
         assert self.post_sep1 is not UNSET
         assert self.post_sep2 is not UNSET
 
-        set('_key', _cmpkey(
+        set_('_key', _cmpkey(
             self.epoch,
             self.release,
             _normalize_pre_tag(self.pre_tag),
