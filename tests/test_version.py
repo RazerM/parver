@@ -153,8 +153,7 @@ def test_release_validation():
     dict(post_tag=None, post=1, post_sep2='.'),
 ])
 def test_validation_value(kwargs):
-    if 'release' not in kwargs:
-        kwargs['release'] = 1
+    kwargs.setdefault('release', 1)
 
     with pytest.raises(ValueError):
         # print so we can see output when test fails
