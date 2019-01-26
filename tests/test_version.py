@@ -151,6 +151,10 @@ def test_release_validation():
     dict(dev=4, dev_sep='y'),
     dict(post_tag=None, post=1, post_sep1='.'),
     dict(post_tag=None, post=1, post_sep2='.'),
+    dict(epoch=-1),
+    dict(pre_tag='a', pre=-1),
+    dict(post=-1),
+    dict(dev=-1),
 ])
 def test_validation_value(kwargs):
     kwargs.setdefault('release', 1)

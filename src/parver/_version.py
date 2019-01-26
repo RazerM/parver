@@ -38,6 +38,14 @@ def not_bool(inst, attr, value):
         )
 
 
+def is_non_negative(inst, attr, value):
+    if value < 0:
+        raise ValueError(
+            "'{name} must be non-negative (got {value!r})"
+            .format(name=attr.name, value=value)
+        )
+
+
 validate_post_tag = unset_or(optional(in_(POST_TAGS)))
 validate_pre_tag = optional(in_(PRE_TAGS))
 validate_sep = optional(in_(SEPS))
@@ -47,6 +55,8 @@ is_int = instance_of(six.integer_types)
 is_str = instance_of(six.string_types)
 is_seq = instance_of(Sequence)
 
+# "All numeric components MUST be non-negative integers."
+num_comp = [not_bool, is_int, is_non_negative]
 
 def is_truthy(instance, attribute, value):
     if not value:
@@ -222,11 +232,11 @@ class Version(object):
     """
     release = attr.ib(converter=force_tuple, validator=[is_seq, is_truthy])
     v = attr.ib(default=False, validator=is_bool)
-    epoch = attr.ib(default=None, validator=[not_bool, optional(is_int)])
+    epoch = attr.ib(default=None, validator=optional(num_comp))
     pre_tag = attr.ib(default=None, validator=validate_pre_tag)
-    pre = attr.ib(default=None, validator=[not_bool, optional(is_int)])
-    post = attr.ib(default=UNSET, validator=[not_bool, unset_or(optional(is_int))])
-    dev = attr.ib(default=UNSET, validator=[not_bool, unset_or(optional(is_int))])
+    pre = attr.ib(default=None, validator=optional(num_comp))
+    post = attr.ib(default=UNSET, validator=unset_or(optional(num_comp)))
+    dev = attr.ib(default=UNSET, validator=unset_or(optional(num_comp)))
     local = attr.ib(default=None, validator=optional(is_str))
 
     pre_sep1 = attr.ib(default=None, validator=validate_sep)

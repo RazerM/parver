@@ -6,7 +6,8 @@
 
 ### Fixed
 - `Version` incorrectly allowed an empty release sequence.
-- `Version` rejects `bool` where it expects `int`.
+- `Version` rejects `bool` for numeric components.
+- `Version` rejects negative integers for numeric components.
 
 ## [0.2.1][] - 2018-12-31
 ### Fixed
