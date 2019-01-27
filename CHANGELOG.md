@@ -3,6 +3,7 @@
 ## [Unreleased][unreleased]
 ### Added
 - `Version.truncate` method to remove trailing zeros from the release segment.
+- `Version` now validates each item in the release sequence.
 
 ### Fixed
 - `Version` incorrectly allowed an empty release sequence.

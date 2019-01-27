@@ -137,9 +137,16 @@ def test_validation_type(kwargs):
         print(Version(**kwargs))
 
 
-def test_release_validation():
-    with pytest.raises(ValueError):
-        Version(release=())
+@pytest.mark.parametrize('release, exc, match', [
+    ([], ValueError, "'release' cannot be empty"),
+    (-1, ValueError, "'release\[0\]' must be non-negative \(got -1\)"),
+    ([4, -1], ValueError, "'release\[1\]' must be non-negative \(got -1\)"),
+    ([4, 'a'], TypeError, "'release\[1\]' must be.*int"),
+    ([4, True], TypeError, "'release\[1\]' must not be a bool"),
+])
+def test_release_validation(release, exc, match):
+    with pytest.raises(exc, match=match):
+        Version(release=release)
 
 
 @pytest.mark.parametrize('kwargs', [

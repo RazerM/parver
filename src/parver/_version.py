@@ -1,6 +1,7 @@
 # coding: utf-8
 from __future__ import absolute_import, division, print_function
 
+import copy
 import itertools
 import operator
 import re
@@ -9,7 +10,7 @@ from functools import partial
 
 import attr
 import six
-from attr.validators import in_, instance_of, optional
+from attr.validators import and_, in_, instance_of, optional
 
 from . import _segments as segment
 from ._helpers import (
@@ -41,7 +42,7 @@ def not_bool(inst, attr, value):
 def is_non_negative(inst, attr, value):
     if value < 0:
         raise ValueError(
-            "'{name} must be non-negative (got {value!r})"
+            "'{name}' must be non-negative (got {value!r})"
             .format(name=attr.name, value=value)
         )
 
@@ -58,9 +59,37 @@ is_seq = instance_of(Sequence)
 # "All numeric components MUST be non-negative integers."
 num_comp = [not_bool, is_int, is_non_negative]
 
-def is_truthy(instance, attribute, value):
-    if not value:
-        raise ValueError('release cannot be empty')
+
+def sequence_of(validator, allow_empty=False):
+    if isinstance(validator, list):
+        validator = and_(*validator)
+
+    def validate(inst, attr, value):
+        is_seq(inst, attr, value)
+
+        if not allow_empty and not value:
+            raise ValueError(
+                "'{name}' cannot be empty".format(name=attr.name, value=value)
+            )
+
+        for i, item in enumerate(value):
+            try:
+                validator(inst, attr, item)
+            except (ValueError, TypeError):
+                # now that we know it's invalid, let's re-do the validation
+                # with a better attribute name. Since we have to copy data,
+                # we only do it when we know we have to raise an exception.
+                item_attr = copy.copy(attr)
+                object.__setattr__(item_attr, 'name', '{}[{}]'.format(attr.name, i))
+                try:
+                    validator(inst, item_attr, item)
+                except Exception as exc:
+                    six.raise_from(exc, None)
+                else:
+                    # if we somehow got here, raise original exception
+                    raise
+
+    return validate
 
 
 @attr.s(frozen=True, repr=False, cmp=False)
@@ -230,7 +259,7 @@ class Version(object):
         #implicit-post-releases
 
     """
-    release = attr.ib(converter=force_tuple, validator=[is_seq, is_truthy])
+    release = attr.ib(converter=force_tuple, validator=sequence_of(num_comp))
     v = attr.ib(default=False, validator=is_bool)
     epoch = attr.ib(default=None, validator=optional(num_comp))
     pre_tag = attr.ib(default=None, validator=validate_pre_tag)

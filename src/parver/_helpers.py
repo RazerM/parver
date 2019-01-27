@@ -97,7 +97,7 @@ def fixup_module_metadata(module_name, namespace):
 
 def force_tuple(n):
     if isinstance(n, six.string_types):
-        raise TypeError('Expected tuple or int.')
+        raise TypeError('Expected an iterable or int.')
     if not isinstance(n, Iterable):
         return n,
     if not isinstance(n, tuple):
