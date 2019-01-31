@@ -14,7 +14,8 @@ from attr.validators import and_, in_, instance_of, optional
 
 from . import _segments as segment
 from ._helpers import (
-    UNSET, Infinity, doc_signature, force_tuple, kwonly_args, last)
+    UNSET, Infinity, doc_signature, force_lower, force_tuple, kwonly_args,
+    last)
 from ._parse import parse
 
 POST_TAGS = {'post', 'rev', 'r'}
@@ -266,7 +267,7 @@ class Version(object):
     pre = attr.ib(default=None, validator=optional(num_comp))
     post = attr.ib(default=UNSET, validator=unset_or(optional(num_comp)))
     dev = attr.ib(default=UNSET, validator=unset_or(optional(num_comp)))
-    local = attr.ib(default=None, validator=optional(is_str))
+    local = attr.ib(default=None, converter=force_lower, validator=optional(is_str))
 
     pre_sep1 = attr.ib(default=None, validator=validate_sep)
     pre_sep2 = attr.ib(default=None, validator=validate_sep)
@@ -425,7 +426,7 @@ class Version(object):
             pre=self.pre,
             post=UNSET if self.post is None else self.post,
             dev=UNSET if self.dev is None else self.dev,
-            local=self.local
+            local=_normalize_local(self.local),
         )
 
     def __str__(self):
@@ -926,6 +927,13 @@ def _normalize_pre_tag(pre_tag):
         pre_tag = 'rc'
 
     return pre_tag
+
+
+def _normalize_local(local):
+    if local is None:
+        return None
+
+    return '.'.join(map(str, _parse_local_version(local)))
 
 
 def _cmpkey(epoch, release, pre_tag, pre_num, post, dev, local):

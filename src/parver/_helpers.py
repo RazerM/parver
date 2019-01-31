@@ -105,6 +105,14 @@ def force_tuple(n):
     return n
 
 
+def force_lower(s):
+    # We only do this if it's a string, otherwise we let the wrong type pass
+    # through and let the validator complain.
+    if isinstance(s, str):
+        return s.lower()
+    return s
+
+
 def doc_signature(signature):
     def decorator(fn):
         fn.__parverdoc_signature__ = signature

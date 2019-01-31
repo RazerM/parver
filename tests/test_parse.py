@@ -36,3 +36,14 @@ def test_parse_strict_error(version):
 @given(version_string())
 def test_roundtrip(version):
     assert str(Version.parse(version)) == version
+
+
+@pytest.mark.parametrize('version', [
+    '1+ABC',
+    '1+2-3',
+    '1+2_3',
+])
+def test_parse_local_strict(version):
+    with pytest.raises(ParseError):
+        Version.parse(version, strict=True)
+    Version.parse(version)

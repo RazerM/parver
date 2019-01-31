@@ -245,6 +245,7 @@ class TestVersion:
             ("7!1.0.4+8.0", "7!1.0.4+8.0"),
             ("7!1.0.5+9.5", "7!1.0.5+9.5"),
             ("7!1.1.dev1", "7!1.1.dev1"),
+            ("1+2_3-Four", "1+2.3.four"),
         ],
     )
     def test_version_str_repr(self, version, expected):

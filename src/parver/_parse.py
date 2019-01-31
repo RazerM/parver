@@ -19,7 +19,7 @@ canonical = r'''
     pre_post_num = int
     post_tag = "post"
     dev = sep "dev" int
-    local = "+" r'([a-zA-Z0-9]+([-_\.][a-zA-Z0-9]+)*)'
+    local = "+" r'([a-z0-9]+(\.[a-z0-9]+)*)'
     sep = dot
     dot = "."
     int = r'[0-9]+'
@@ -201,9 +201,6 @@ class ParseError(ValueError):
 
 def parse(version, strict=False):
     parser = _strict_parser if strict else _permissive_parser
-
-    if not strict:
-        version = version.lower()
 
     try:
         tree = parser.parse(version.strip())
