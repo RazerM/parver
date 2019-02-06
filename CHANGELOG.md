@@ -13,7 +13,7 @@
   or uppercase letters.
 - The local version was only being converted to lowercase when parsing with
   `strict=False`. It is now always converted.
-- The local version separators were not being normalized to use `.`. 
+- The local version separators were not being normalized to use `.`.
 
 ## [0.2.1][] - 2018-12-31
 ### Fixed
@@ -33,7 +33,7 @@
 
 ### Fixed
 - Deprecation warnings about invalid escape sequences in `_parse.py`.
-  
+
 [CalVer]: (https://calver.org)
 
 ## [0.1.1][] - 2018-06-19
