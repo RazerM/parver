@@ -13,9 +13,9 @@
 # serve to show the default.
 from __future__ import absolute_import, division, print_function
 
-from numbers import Number
 import os
 import sys
+from numbers import Number
 
 import sphinx_rtd_theme
 

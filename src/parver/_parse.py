@@ -3,11 +3,11 @@ from __future__ import absolute_import, division, print_function
 
 import attr
 import six
-from arpeggio import NoMatch, PTNodeVisitor, visit_parse_tree, Terminal
+from arpeggio import NoMatch, PTNodeVisitor, Terminal, visit_parse_tree
 from arpeggio.cleanpeg import ParserPEG
 
-from ._helpers import UNSET
 from . import _segments as segment
+from ._helpers import UNSET
 
 canonical = r'''
     version = epoch? release pre? post? dev? local? EOF

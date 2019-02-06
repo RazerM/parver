@@ -3,10 +3,10 @@ from __future__ import absolute_import, division, print_function
 
 import string
 
-from parver import Version
-
 from hypothesis.strategies import (
     composite, integers, just, lists, one_of, sampled_from, text)
+
+from parver import Version
 
 num_int = integers(min_value=0)
 num_str = num_int.map(str)
