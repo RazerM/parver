@@ -4,6 +4,9 @@
 ### Added
 - `Version.truncate` method to remove trailing zeros from the release segment.
 - `Version` now validates each item in the release sequence.
+- `Version.bump_epoch` method.
+- Add `by` keyword argument to `bump_pre`, `bump_post`, and `bump_dev` methods,
+  which e.g. `.bump_dev(by=-1)`.
 
 ### Fixed
 - `Version` incorrectly allowed an empty release sequence.

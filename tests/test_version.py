@@ -463,15 +463,37 @@ def test_bump_release_error(index, exc):
         print(Version(release=1).bump_release(index=index))
 
 
-@pytest.mark.parametrize('before, tag, after', [
-    ('1', 'a', '1a0'),
-    ('1a0', None, '1a1'),
-    ('1a', None, '1a1'),
-    ('1a', 'a', '1a1'),
-    ('1.b-0', None, '1.b-1'),
+@pytest.mark.parametrize('by', [
+    '1',
+    1.1,
+    None,
 ])
-def test_bump_pre(before, tag, after):
-    assert str(Version.parse(before).bump_pre(tag)) == after
+def test_bump_by_error(by):
+    v = Version(release=1)
+
+    with pytest.raises(TypeError):
+        v.bump_epoch(by=by)
+
+    with pytest.raises(TypeError):
+        v.bump_dev(by=by)
+
+    with pytest.raises(TypeError):
+        v.bump_pre('a', by=by)
+
+    with pytest.raises(TypeError):
+        v.bump_post(by=by)
+
+
+@pytest.mark.parametrize('before, tag, kwargs, after', [
+    ('1', 'a', dict(), '1a0'),
+    ('1a0', None, dict(), '1a1'),
+    ('1a', None, dict(), '1a1'),
+    ('1a', 'a', dict(), '1a1'),
+    ('1.b-0', None, dict(), '1.b-1'),
+    ('1a1', None, dict(by=-1), '1a0'),
+])
+def test_bump_pre(before, tag, kwargs, after):
+    assert str(Version.parse(before).bump_pre(tag, **kwargs)) == after
 
 
 @pytest.mark.parametrize('version, tag', [
@@ -490,18 +512,31 @@ def test_bump_pre_error(version, tag):
     ('1-0', dict(), '1-1'),
     ('1-0', dict(tag='post'), '1.post1'),
     ('1-post_0', dict(tag=None), '1-1'),
+    ('1.post1', dict(by=-1), '1.post0'),
 ])
 def test_bump_post(before, kwargs, after):
     assert str(Version.parse(before).bump_post(**kwargs)) == after
 
 
-@pytest.mark.parametrize('before, after', [
-    ('1', '1.dev0'),
-    ('1.dev0', '1.dev1'),
-    ('1-dev1', '1-dev2'),
+@pytest.mark.parametrize('before, kwargs, after', [
+    ('1', dict(), '1.dev0'),
+    ('1.dev0', dict(), '1.dev1'),
+    ('1-dev1', dict(), '1-dev2'),
+    ('1-dev1', dict(by=-1), '1-dev0'),
 ])
-def test_bump_dev(before, after):
-    assert str(Version.parse(before).bump_dev()) == after
+def test_bump_dev(before, kwargs, after):
+    assert str(Version.parse(before).bump_dev(**kwargs)) == after
+
+
+@pytest.mark.parametrize('before, kwargs, after', [
+    ('2', dict(), '1!2'),
+    ('0!3', dict(), '1!3'),
+    ('1!4', dict(), '2!4'),
+    ('1!4', dict(by=-1), '0!4'),
+    ('1!4', dict(by=2), '3!4'),
+])
+def test_bump_epoch(before, kwargs, after):
+    assert str(Version.parse(before).bump_epoch(**kwargs)) == after
 
 
 @pytest.mark.parametrize('arg, expected', [

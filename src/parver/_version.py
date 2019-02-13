@@ -688,6 +688,31 @@ class Version(object):
         release = itertools.starmap(new_parts, enumerate(release))
         return self.replace(release=release)
 
+    @doc_signature('(*, by=1)')
+    def bump_epoch(self, **kwargs):
+        """Return a new :class:`Version` instance with the epoch number
+        bumped.
+
+        :param by: How much to bump the number by.
+        :type by: int
+
+        :raises TypeError: `by` is not an integer.
+
+        .. doctest::
+
+            >>> Version.parse('1.4').bump_epoch()
+            <Version '1!1.4'>
+            >>> Version.parse('2!1.4').bump_epoch(by=-1)
+            <Version '1!1.4'>
+        """
+        _, by = kwonly_args(kwargs, (), [('by', 1)])
+
+        if not isinstance(by, int):
+            raise TypeError('by must be an integer')
+
+        epoch = 0 if self.epoch is None else self.epoch + by
+        return self.replace(epoch=epoch)
+
     @doc_signature('(*, index)')
     def bump_release(self, **kwargs):
         """Return a new :class:`Version` instance with the release number
@@ -808,17 +833,21 @@ class Version(object):
         _, index, value = kwonly_args(kwargs, ('index', 'value'))
         return self._set_release(index=index, value=value, bump=False)
 
-    def bump_pre(self, tag=None):
+    @doc_signature('(tag=None, *, by=1)')
+    def bump_pre(self, tag=None, **kwargs):
         """Return a new :class:`Version` instance with the pre-release number
         bumped.
 
         :param tag: Pre-release tag. Required if not already set.
         :type tag: str
+        :param by: How much to bump the number by.
+        :type by: int
 
         :raises ValueError: Trying to call ``bump_pre(tag=None)`` on a
             :class:`Version` instance that is not already a pre-release.
         :raises ValueError: Calling the method with a `tag` not equal to the
             current :attr:`post_tag`. See :meth:`replace` instead.
+        :raises TypeError: `by` is not an integer.
 
         .. doctest::
 
@@ -826,8 +855,15 @@ class Version(object):
             <Version '1.4a0'>
             >>> Version.parse('1.4b1').bump_pre()
             <Version '1.4b2'>
+            >>> Version.parse('1.4b1').bump_pre(by=-1)
+            <Version '1.4b0'>
         """
-        pre = 0 if self.pre is None else self.pre + 1
+        _, by = kwonly_args(kwargs, (), [('by', 1)])
+
+        if not isinstance(by, int):
+            raise TypeError('by must be an integer')
+
+        pre = 0 if self.pre is None else self.pre + by
 
         if self.pre_tag is None:
             if tag is None:
@@ -843,13 +879,18 @@ class Version(object):
 
         return self.replace(pre=pre, pre_tag=tag)
 
-    def bump_post(self, tag=UNSET):
+    @doc_signature('(tag=None, *, by=1)')
+    def bump_post(self, tag=UNSET, **kwargs):
         """Return a new :class:`Version` instance with the post release number
         bumped.
 
         :param tag: Post release tag. Will preserve the current tag by default,
             or use `post` if the instance is not already a post release.
         :type tag: str
+        :param by: How much to bump the number by.
+        :type by: int
+
+        :raises TypeError: `by` is not an integer.
 
         .. doctest::
 
@@ -859,15 +900,28 @@ class Version(object):
             <Version '1.4-1'>
             >>> Version.parse('1.4_post-1').bump_post(tag='rev')
             <Version '1.4_rev-2'>
+            >>> Version.parse('1.4.post2').bump_post(by=-1)
+            <Version '1.4.post1'>
         """
-        post = 0 if self.post is None else self.post + 1
+        _, by = kwonly_args(kwargs, (), [('by', 1)])
+
+        if not isinstance(by, int):
+            raise TypeError('by must be an integer')
+
+        post = 0 if self.post is None else self.post + by
         if tag is UNSET and self.post is not None:
             tag = self.post_tag
         return self.replace(post=post, post_tag=tag)
 
-    def bump_dev(self):
+    @doc_signature('(*, by=1)')
+    def bump_dev(self, **kwargs):
         """Return a new :class:`Version` instance with the development release
         number bumped.
+
+        :param by: How much to bump the number by.
+        :type by: int
+
+        :raises TypeError: `by` is not an integer.
 
         .. doctest::
 
@@ -875,8 +929,15 @@ class Version(object):
             <Version '1.4.dev0'>
             >>> Version.parse('1.4_dev1').bump_dev()
             <Version '1.4_dev2'>
+            >>> Version.parse('1.4.dev3').bump_dev(by=-1)
+            <Version '1.4.dev2'>
         """
-        dev = 0 if self.dev is None else self.dev + 1
+        _, by = kwonly_args(kwargs, (), [('by', 1)])
+
+        if not isinstance(by, int):
+            raise TypeError('by must be an integer')
+
+        dev = 0 if self.dev is None else self.dev + by
         return self.replace(dev=dev)
 
     @doc_signature('(*, min_length=1)')
@@ -896,7 +957,7 @@ class Version(object):
             >>> Version.parse('1').truncate(min_length=2)
             <Version '1.0'>
         """
-        _, min_length = kwonly_args(kwargs, (), dict(min_length=1))
+        _, min_length = kwonly_args(kwargs, (), [('min_length', 1)])
 
         if not isinstance(min_length, int):
             raise TypeError('min_length must be an integer')
