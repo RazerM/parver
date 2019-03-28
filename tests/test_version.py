@@ -640,3 +640,7 @@ def test_truncate_error():
 
     with pytest.raises(ValueError, match='min_length'):
         Version.parse('1').truncate(min_length=0)
+
+
+def test_public_module():
+    assert Version.__module__ == 'parver'
