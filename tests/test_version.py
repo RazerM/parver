@@ -484,8 +484,25 @@ def test_bump_by_error(by):
         v.bump_post(by=by)
 
 
+def test_bump_by_value_error():
+    v = Version(release=1)
+
+    with pytest.raises(ValueError, match='negative'):
+        v.bump_epoch(by=-1)
+
+    with pytest.raises(ValueError, match='negative'):
+        v.bump_dev(by=-1)
+
+    with pytest.raises(ValueError, match='negative'):
+        v.bump_pre(by=-1)
+
+    with pytest.raises(ValueError, match='negative'):
+        v.bump_post(by=-1)
+
+
 @pytest.mark.parametrize('before, tag, kwargs, after', [
     ('1', 'a', dict(), '1a0'),
+    ('1', 'a', dict(by=2), '1a1'),
     ('1a0', None, dict(), '1a1'),
     ('1a', None, dict(), '1a1'),
     ('1a', 'a', dict(), '1a1'),
@@ -507,6 +524,7 @@ def test_bump_pre_error(version, tag):
 
 @pytest.mark.parametrize('before, kwargs, after', [
     ('1', dict(), '1.post0'),
+    ('1', dict(by=2), '1.post1'),
     ('1.post0', dict(), '1.post1'),
     ('1rev', dict(), '1rev1'),
     ('1-0', dict(), '1-1'),
@@ -520,6 +538,7 @@ def test_bump_post(before, kwargs, after):
 
 @pytest.mark.parametrize('before, kwargs, after', [
     ('1', dict(), '1.dev0'),
+    ('1', dict(by=2), '1.dev1'),
     ('1.dev0', dict(), '1.dev1'),
     ('1-dev1', dict(), '1-dev2'),
     ('1-dev1', dict(by=-1), '1-dev0'),
@@ -530,6 +549,7 @@ def test_bump_dev(before, kwargs, after):
 
 @pytest.mark.parametrize('before, kwargs, after', [
     ('2', dict(), '1!2'),
+    ('2', dict(by=2), '2!2'),
     ('0!3', dict(), '1!3'),
     ('1!4', dict(), '2!4'),
     ('1!4', dict(by=-1), '0!4'),

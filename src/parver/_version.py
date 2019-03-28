@@ -48,6 +48,14 @@ def is_non_negative(inst, attr, value):
         )
 
 
+def check_by(by, current):
+    if not isinstance(by, int):
+        raise TypeError('by must be an integer')
+
+    if current is None and by < 0:
+        raise ValueError('Cannot bump by negative amount when current value is unset.')
+
+
 validate_post_tag = unset_or(optional(in_(POST_TAGS)))
 validate_pre_tag = optional(in_(PRE_TAGS))
 validate_sep = optional(in_(SEPS))
@@ -706,11 +714,9 @@ class Version(object):
             <Version '1!1.4'>
         """
         _, by = kwonly_args(kwargs, (), [('by', 1)])
+        check_by(by, self.epoch)
 
-        if not isinstance(by, int):
-            raise TypeError('by must be an integer')
-
-        epoch = 0 if self.epoch is None else self.epoch + by
+        epoch = by - 1 if self.epoch is None else self.epoch + by
         return self.replace(epoch=epoch)
 
     @doc_signature('(*, index)')
@@ -859,11 +865,9 @@ class Version(object):
             <Version '1.4b0'>
         """
         _, by = kwonly_args(kwargs, (), [('by', 1)])
+        check_by(by, self.pre)
 
-        if not isinstance(by, int):
-            raise TypeError('by must be an integer')
-
-        pre = 0 if self.pre is None else self.pre + by
+        pre = by - 1 if self.pre is None else self.pre + by
 
         if self.pre_tag is None:
             if tag is None:
@@ -904,11 +908,9 @@ class Version(object):
             <Version '1.4.post1'>
         """
         _, by = kwonly_args(kwargs, (), [('by', 1)])
+        check_by(by, self.post)
 
-        if not isinstance(by, int):
-            raise TypeError('by must be an integer')
-
-        post = 0 if self.post is None else self.post + by
+        post = by - 1 if self.post is None else self.post + by
         if tag is UNSET and self.post is not None:
             tag = self.post_tag
         return self.replace(post=post, post_tag=tag)
@@ -933,11 +935,9 @@ class Version(object):
             <Version '1.4.dev2'>
         """
         _, by = kwonly_args(kwargs, (), [('by', 1)])
+        check_by(by, self.dev)
 
-        if not isinstance(by, int):
-            raise TypeError('by must be an integer')
-
-        dev = 0 if self.dev is None else self.dev + by
+        dev = by - 1 if self.dev is None else self.dev + by
         return self.replace(dev=dev)
 
     @doc_signature('(*, min_length=1)')
