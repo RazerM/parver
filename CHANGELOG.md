@@ -14,6 +14,7 @@
 - `Version` rejects negative integers for numeric components.
 - The strict parser no longer accepts local versions with `-` or `_` separators,
   or uppercase letters.
+- The strict parser no longer accepts numbers with leading zeros.
 - The local version was only being converted to lowercase when parsing with
   `strict=False`. It is now always converted.
 - The local version separators were not being normalized to use `.`.

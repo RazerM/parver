@@ -19,11 +19,12 @@ canonical = r'''
     pre_post_num = int
     post_tag = "post"
     dev = sep "dev" int
-    local = "+" r'([a-z0-9]+(\.[a-z0-9]+)*)'
+    local = "+" local_part (sep local_part)*
+    local_part = alpha / int
     sep = dot
     dot = "."
-    int = r'[0-9]+'
-    alpha = r'[a-zA-Z0-9]'
+    int = r'0|[1-9][0-9]*'
+    alpha = r'[0-9]*[a-z][a-z0-9]*'
 '''
 
 permissive = r'''
@@ -38,11 +39,12 @@ permissive = r'''
     post_tag = "post" / "rev" / "r"
     pre_post_num = sep? int
     dev = sep? "dev" int?
-    local = "+" r'([a-zA-Z0-9]+([-_\.][a-zA-Z0-9]+)*)'
+    local = "+" local_part (sep local_part)*
+    local_part = alpha / int
     sep = dot / "-" / "_"
     dot = "."
     int = r'[0-9]+'
-    alpha = r'[a-zA-Z0-9]'
+    alpha = r'[0-9]*[a-z][a-z0-9]*'
 '''
 
 _strict_parser = ParserPEG(canonical, root_rule_name='version', skipws=False)
@@ -186,7 +188,7 @@ class VersionVisitor(PTNodeVisitor):
         return segment.Dev(value=num, sep=sep)
 
     def visit_local(self, node, children):
-        return segment.Local(''.join(children))
+        return segment.Local(''.join(str(getattr(c, 'value', c)) for c in children))
 
     def visit_int(self, node, children):
         return int(node.value)

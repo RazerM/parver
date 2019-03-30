@@ -107,21 +107,27 @@ def dev(draw, strict=False):
 
 
 @composite
-def local_segment(draw, strict=False):
+def local_segment(draw):
+    alpha = (
+        draw(one_of(just(''), integers(0, 9).map(str)))
+        + draw(text(string.ascii_lowercase, min_size=1, max_size=1))
+        + draw(text(string.ascii_lowercase + string.digits))
+    )
+    return draw(one_of(num_str, just(alpha)))
+
+
+@composite
+def local(draw, strict=False):
     if strict:
         sep = just('.')
     else:
         sep = sampled_from('-_.')
 
-    return draw(sep) + draw(text(string.ascii_lowercase + string.digits, min_size=1))
+    part = local_segment()
+    sep_part = sep.map(lambda s: s + draw(local_segment()))
+    sep_parts = lists(sep_part).map(lambda l: ''.join(l))
 
-
-@composite
-def local(draw, strict=False):
-    start = draw(text(string.ascii_lowercase + string.digits, min_size=1))
-    end = ''.join(draw(lists(local_segment(strict=strict))))
-
-    return draw(one_of(just(''), just('+' + start + end)))
+    return draw(one_of(just(''), part.map(lambda s: '+' + s + draw(sep_parts))))
 
 
 whitespace = sampled_from(['', '\t', '\n', '\r', '\f', '\v'])

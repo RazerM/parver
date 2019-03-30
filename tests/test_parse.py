@@ -42,6 +42,7 @@ def test_roundtrip(version):
     '1+ABC',
     '1+2-3',
     '1+2_3',
+    '1+02_3',
 ])
 def test_parse_local_strict(version):
     with pytest.raises(ParseError):
