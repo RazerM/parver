@@ -18,9 +18,9 @@ LONG_DESC = open('README.rst', encoding='utf-8').read()
 
 extras_require = {
     'test': [
-        'pytest ~= 3.5',
-        'hypothesis ~= 3.56',
-        'pretend ~= 1.0',
+        'pytest',
+        'hypothesis',
+        'pretend',
     ],
     'docstest': [
         'doc8',
