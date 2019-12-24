@@ -393,7 +393,7 @@ class Version(object):
             >>> Version.parse('1.dev', strict=True)
             Traceback (most recent call last):
               ...
-            parver._parse.ParseError: Expected int at position (1, 6) => '1.dev*'.
+            parver.ParseError: Expected int at position (1, 6) => '1.dev*'.
         """
         segments = parse(version, strict=strict)
 
