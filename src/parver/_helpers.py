@@ -178,3 +178,6 @@ def last(iterable, **kwargs):
         if default is UNSET:
             raise
         return default
+
+
+IMPLICIT_ZERO = ''

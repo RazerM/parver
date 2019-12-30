@@ -7,7 +7,7 @@ from arpeggio import NoMatch, PTNodeVisitor, Terminal, visit_parse_tree
 from arpeggio.cleanpeg import ParserPEG
 
 from . import _segments as segment
-from ._helpers import UNSET
+from ._helpers import IMPLICIT_ZERO, UNSET
 
 canonical = r'''
     version = epoch? release pre? post? dev? local? EOF
@@ -108,7 +108,7 @@ class VersionVisitor(PTNodeVisitor):
 
         if sep2 is UNSET:
             sep2 = None
-            num = None
+            num = IMPLICIT_ZERO
 
         assert sep1 is not UNSET
         assert tag is not UNSET
@@ -154,7 +154,7 @@ class VersionVisitor(PTNodeVisitor):
 
         if sep2 is UNSET:
             sep2 = None
-            num = None
+            num = IMPLICIT_ZERO
 
         assert sep1 is not UNSET
         assert tag is not UNSET
@@ -170,7 +170,7 @@ class VersionVisitor(PTNodeVisitor):
         return segment.Post(sep1=UNSET, tag=None, sep2=UNSET, value=children[0])
 
     def visit_dev(self, node, children):
-        num = None
+        num = IMPLICIT_ZERO
         sep = UNSET
 
         for token in children:

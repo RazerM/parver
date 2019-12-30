@@ -14,8 +14,8 @@ from attr.validators import and_, in_, instance_of, optional
 
 from . import _segments as segment
 from ._helpers import (
-    UNSET, Infinity, doc_signature, force_lower, force_tuple, kwonly_args,
-    last)
+    IMPLICIT_ZERO, UNSET, Infinity, doc_signature, force_lower, force_tuple,
+    kwonly_args, last)
 from ._parse import parse
 
 POST_TAGS = {'post', 'rev', 'r'}
@@ -26,6 +26,18 @@ PRE_TAGS = {'c', 'rc', 'alpha', 'a', 'beta', 'b', 'preview', 'pre'}
 def unset_or(validator):
     def validate(inst, attr, value):
         if value is UNSET:
+            return
+
+        validator(inst, attr, value)
+    return validate
+
+
+def implicit_or(validator):
+    if isinstance(validator, list):
+        validator = and_(*validator)
+
+    def validate(inst, attr, value):
+        if value == IMPLICIT_ZERO:
             return
 
         validator(inst, attr, value)
@@ -165,7 +177,7 @@ class Version(object):
 
         .. doctest::
 
-            >>> v = Version(release=1, post=None)
+            >>> v = Version(release=1, post='')
             >>> str(v)
             '1.post'
             >>> v.post
@@ -270,11 +282,11 @@ class Version(object):
     """
     release = attr.ib(converter=force_tuple, validator=sequence_of(num_comp))
     v = attr.ib(default=False, validator=is_bool)
-    epoch = attr.ib(default=None, validator=optional(num_comp))
+    epoch = attr.ib(default=IMPLICIT_ZERO, validator=implicit_or(num_comp))
     pre_tag = attr.ib(default=None, validator=validate_pre_tag)
-    pre = attr.ib(default=None, validator=optional(num_comp))
-    post = attr.ib(default=UNSET, validator=unset_or(optional(num_comp)))
-    dev = attr.ib(default=UNSET, validator=unset_or(optional(num_comp)))
+    pre = attr.ib(default=None, validator=implicit_or(optional(num_comp)))
+    post = attr.ib(default=None, validator=implicit_or(optional(num_comp)))
+    dev = attr.ib(default=None, validator=implicit_or(optional(num_comp)))
     local = attr.ib(default=None, converter=force_lower, validator=optional(is_str))
 
     pre_sep1 = attr.ib(default=None, validator=validate_sep)
@@ -293,23 +305,31 @@ class Version(object):
     def __attrs_post_init__(self):
         set_ = partial(object.__setattr__, self)
 
-        if self.epoch is None:
+        if self.epoch == IMPLICIT_ZERO:
             set_('epoch', 0)
             set_('epoch_implicit', True)
 
-        if self.pre_tag is not None and self.pre is None:
-            set_('pre', 0)
-            set_('pre_implicit', True)
+        # Validate pre-release parameters.
+        if self.pre_tag is None:
+            if self.pre is not None:
+                raise ValueError('Must set pre_tag if pre is given.')
 
-        if self.pre is not None and self.pre_tag is None:
-            raise ValueError('Must set pre_tag if pre is given.')
+            if self.pre_sep1 is not None or self.pre_sep2 is not None:
+                raise ValueError('Cannot set pre_sep1 or pre_sep2 without pre_tag.')
+        else:
+            if self.pre == IMPLICIT_ZERO:
+                set_('pre', 0)
+                set_('pre_implicit', True)
+            elif self.pre is None:
+                raise ValueError('Must set pre if pre_tag is given.')
 
-        if (self.pre_tag is None and
-                (self.pre_sep1 is not None or self.pre_sep2 is not None)):
-            raise ValueError('Cannot set pre_sep1 or pre_sep2 without pre_tag.')
+        if self.post_tag is not UNSET and self.post is None:
+            raise ValueError('Must set post if post_tag is given.')
 
+        # Validate parameters for implicit post-release (post_tag=None).
+        # An implicit post-release is e.g. '1-2' (= '1.post2')
         if self.post_tag is None:
-            if self.post is UNSET or self.post is None:
+            if self.post == IMPLICIT_ZERO:
                 raise ValueError(
                     "Implicit post releases (post_tag=None) require a numerical "
                     "value for 'post' argument.")
@@ -322,27 +342,20 @@ class Version(object):
             if self.pre_implicit:
                 raise ValueError(
                     'post_tag cannot be None with an implicit pre-release '
-                    '(pre=None).')
+                    "(pre='').")
 
             set_('post_sep1', '-')
 
-        if self.post is not UNSET:
+        if self.post is not None:
             if self.post_tag is UNSET:
                 set_('post_tag', 'post')
-            if self.post is None:
+            if self.post == IMPLICIT_ZERO:
                 set_('post_implicit', True)
                 set_('post', 0)
 
-        if self.post_tag is not UNSET and self.post is UNSET:
-            set_('post_implicit', True)
-            set_('post', 0)
-
-        if self.dev is None:
+        if self.dev == IMPLICIT_ZERO:
             set_('dev_implicit', True)
             set_('dev', 0)
-
-        if self.post is UNSET:
-            set_('post', None)
 
         if self.post_tag is UNSET:
             set_('post_tag', None)
@@ -351,9 +364,6 @@ class Version(object):
             set_('post_sep1', None if self.post is None else '.')
         if self.post_sep2 is UNSET:
             set_('post_sep2', None)
-
-        if self.dev is UNSET:
-            set_('dev', None)
 
         if self.dev_sep is UNSET:
             set_('dev_sep', None if self.dev is None else '.')
@@ -429,11 +439,11 @@ class Version(object):
     def normalize(self):
         return Version(
             release=self.release,
-            epoch=None if self.epoch == 0 else self.epoch,
+            epoch=IMPLICIT_ZERO if self.epoch == 0 else self.epoch,
             pre_tag=_normalize_pre_tag(self.pre_tag),
             pre=self.pre,
-            post=UNSET if self.post is None else self.post,
-            dev=UNSET if self.dev is None else self.dev,
+            post=self.post,
+            dev=self.dev,
             local=_normalize_local(self.local),
         )
 
@@ -572,16 +582,16 @@ class Version(object):
         d = attr.asdict(self, filter=lambda attr, _: attr.init)
 
         if self.epoch_implicit:
-            d['epoch'] = None
+            d['epoch'] = IMPLICIT_ZERO
 
         if self.pre_implicit:
-            d['pre'] = None
+            d['pre'] = IMPLICIT_ZERO
 
         if self.post_implicit:
-            d['post'] = None
+            d['post'] = IMPLICIT_ZERO
 
         if self.dev_implicit:
-            d['dev'] = None
+            d['dev'] = IMPLICIT_ZERO
 
         if self.pre is None:
             del d['pre']
