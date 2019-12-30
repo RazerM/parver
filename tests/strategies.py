@@ -19,9 +19,11 @@ def epoch():
 
 @composite
 def release(draw):
-    a = draw(num_str)
-    parts = [a] + draw(lists(num_str.map(lambda s: '.' + s)))
-    return ''.join(parts)
+    return draw(
+        num_str
+        .map(lambda s: [s] + draw(lists(num_str.map(lambda s: '.' + s))))
+        .map(lambda l: ''.join(l))
+    )
 
 
 def separator(strict=False, optional=False):
@@ -42,25 +44,29 @@ def pre(draw, strict=False):
     if not strict:
         words.extend(['c', 'alpha', 'beta', 'pre', 'preview'])
 
-    sep1 = draw(separator(strict=strict, optional=True))
-    if strict:
-        sep1 = ''
+    blank = just('')
 
-    word = draw(sampled_from(words))
+    sep1 = separator(strict=strict, optional=True)
+    if strict:
+        sep1 = blank
+
+    word = sampled_from(words)
 
     if strict:
-        sep2 = ''
+        sep2 = blank
     else:
-        sep2 = draw(separator(strict=strict, optional=True))
+        sep2 = separator(strict=strict, optional=True)
 
-    n = draw(num_str)
+    num_part = sep2.map(lambda s: s + draw(num_str))
+    if not strict:
+        num_part = one_of(blank, num_part)
 
-    if strict:
-        num_part = draw(just(sep2 + n))
-    else:
-        num_part = draw(one_of(just(''), just(sep2 + n)))
+    nonempty = (
+        sep1
+        .map(lambda s: s + draw(word) + draw(num_part))
+    )
 
-    return draw(one_of(just(''), just(sep1 + word + num_part)))
+    return draw(one_of(blank, nonempty))
 
 
 @composite
@@ -69,41 +75,40 @@ def post(draw, strict=False):
     if not strict:
         words.extend(['r', 'rev'])
 
-    sep1 = draw(separator(strict=strict, optional=not strict))
-    word = draw(sampled_from(words))
+    sep1 = separator(strict=strict, optional=not strict)
+    word = sampled_from(words)
 
-    sep2 = draw(separator(strict=strict, optional=True))
+    blank = just('')
+
+    sep2 = separator(strict=strict, optional=True)
     if strict:
-        sep2 = ''
+        sep2 = blank
 
-    n = draw(num_str)
+    num_part = sep2.map(lambda s: s + draw(num_str))
+    if not strict:
+        num_part = one_of(blank, num_part)
 
-    if strict:
-        num_part = draw(just(sep2 + n))
-    else:
-        num_part = draw(one_of(just(''), just(sep2 + n)))
-
-    post = sep1 + word + num_part
+    post = sep1.map(lambda s: s + draw(word) + draw(num_part))
 
     if strict:
-        return post
+        return draw(post)
 
-    post = just(post)
     post_implicit = num_str.map(lambda s: '-' + s)
 
-    return draw(one_of(just(''), post_implicit, post))
+    return draw(one_of(blank, post_implicit, post))
 
 
 @composite
 def dev(draw, strict=False):
-    sep = draw(separator(strict=strict, optional=not strict))
+    sep = separator(strict=strict, optional=not strict)
 
-    if strict:
-        num_part = draw(num_str)
-    else:
-        num_part = draw(one_of(just(''), num_str))
+    blank = just('')
 
-    return draw(one_of(just(''), just(sep + 'dev' + num_part)))
+    num_part = num_str
+    if not strict:
+        num_part = one_of(blank, num_part)
+
+    return draw(one_of(blank, sep.map(lambda s: s + 'dev' + draw(num_part))))
 
 
 @composite
