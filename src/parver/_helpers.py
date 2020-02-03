@@ -1,7 +1,8 @@
 # coding: utf-8
 from __future__ import absolute_import, division, print_function
 
-from collections import Iterable, deque
+from collections import deque
+from collections.abc import Iterable
 
 import six
 

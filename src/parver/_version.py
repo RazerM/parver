@@ -5,7 +5,7 @@ import copy
 import itertools
 import operator
 import re
-from collections import Sequence
+from collections.abc import Sequence
 from functools import partial
 
 import attr
