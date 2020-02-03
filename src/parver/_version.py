@@ -5,8 +5,12 @@ import copy
 import itertools
 import operator
 import re
-from collections import Sequence
 from functools import partial
+try:
+    from collections.abc import Sequence
+except ImportError:
+    # Python 2
+    from collections import Sequence
 
 import attr
 import six
