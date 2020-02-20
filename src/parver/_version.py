@@ -5,11 +5,11 @@ import copy
 import itertools
 import operator
 import re
-from collections import Sequence
 from functools import partial
 
 import attr
 import six
+from six.moves.collections_abc import Sequence
 from attr.validators import and_, in_, instance_of, optional
 
 from . import _segments as segment
