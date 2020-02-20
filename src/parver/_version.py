@@ -130,15 +130,15 @@ class Version(object):
         Required to signify a pre-release.
     :type pre_tag: str
 
-    :param pre: `Pre-release`_ number. May be `None` to signify an
+    :param pre: `Pre-release`_ number. May be ``''`` to signify an
         `implicit pre-release number`_.
     :type pre: int
 
-    :param post: `Post-release`_ number. May be `None` to signify an
+    :param post: `Post-release`_ number. May be ``''`` to signify an
         `implicit post release number`_.
     :type post: int
 
-    :param dev: `Developmental release`_ number. May be `None` to signify an
+    :param dev: `Developmental release`_ number. May be ``''`` to signify an
         `implicit development release number`_.
     :type dev: int
 
