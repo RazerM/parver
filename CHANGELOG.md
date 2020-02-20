@@ -8,6 +8,19 @@
 - Add `by` keyword argument to `bump_pre`, `bump_post`, and `bump_dev` methods,
   which e.g. `.bump_dev(by=-1)`.
 
+### Changed
+- **BREAKING CHANGE**. The `Version` constructor now uses an empty string to
+  represent an implicit zero instead of `None`.
+
+  ```python
+  >>> Version(release=1, post='')
+  <Version '1.post'>
+  ```
+
+### Removed
+- **BREAKING CHANGE**. `Version.clear` is no longer necessary. Use
+  `Version.replace(pre=None, post=None, dev=None)` instead.
+
 ### Fixed
 - `Version` incorrectly allowed an empty release sequence.
 - `Version` rejects `bool` for numeric components.
