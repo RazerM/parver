@@ -94,7 +94,7 @@ non-standard parameters are kept as-is, even when you mutate:
 .. doctest::
 
     >>> v = Version.parse('v1.2.alpha-3.post')
-    >>> v.clear(post=True).bump_pre()
+    >>> v.replace(post=None).bump_pre()
     <Version 'v1.2.alpha-4'>
 
 .. [#] One exception is that ``parver`` always converts the version string to

@@ -369,37 +369,25 @@ def test_replace_roundtrip(version):
         dict(post_tag=None),
         '2-4',
     ),
-    ('1.2.alpha-3_rev.4_dev5', dict(pre=None, post=None, dev=None), '1.2'),
+    (
+        '1.2.alpha-3_rev.4_dev5',
+        dict(pre=None, post=None, dev=None),
+        '1.2',
+    ),
+    (
+        '1.2.alpha-3_rev.4_dev5',
+        dict(pre=None, post=None, dev=None),
+        '1.2',
+    ),
+    (
+        '1.2',
+        dict(pre=None, post=None, dev=None),
+        '1.2',
+    ),
 ])
 def test_replace(before, kwargs, after):
     """Make sure the keys we expect are passed through."""
     assert str(Version.parse(before).replace(**kwargs)) == after
-
-
-@pytest.mark.parametrize('before, kwargs, after', [
-    (
-        '1.2.alpha-3_rev.4_dev5',
-        dict(pre=True, post=True, dev=True),
-        '1.2',
-    ),
-    (
-        '1.2.alpha-3_rev.4_dev5',
-        dict(pre=False, post=False, dev=False),
-        '1.2.alpha-3_rev.4_dev5',
-    ),
-    (
-        '1.2.alpha-3_rev.4_dev5',
-        dict(),
-        '1.2.alpha-3_rev.4_dev5',
-    ),
-    (
-        '1.2',
-        dict(pre=True, post=True, dev=True),
-        '1.2',
-    ),
-])
-def test_clear(before, kwargs, after):
-    assert str(Version.parse(before).clear(**kwargs)) == after
 
 
 @pytest.mark.parametrize('before, index, after', [

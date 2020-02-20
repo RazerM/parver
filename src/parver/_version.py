@@ -553,7 +553,7 @@ class Version(object):
 
         See also: :meth:`clear` and :meth:`replace`.
         """
-        return self.clear(pre=True, post=True, dev=True).replace(local=None)
+        return self.replace(pre=None, post=None, dev=None, local=None)
 
     @property
     def is_prerelease(self):
@@ -632,32 +632,6 @@ class Version(object):
             del d['dev_sep']
 
         return d
-
-    def clear(self, pre=False, post=False, dev=False):
-        """Like :meth:`replace`, but has the ability to **remove** pre-release,
-        post release, and development release segments.
-
-        See also: :meth:`base_version`.
-        """
-        d = self._attrs_as_init()
-
-        if pre:
-            d.pop('pre', None)
-            d.pop('pre_tag', None)
-            d.pop('pre_sep1', None)
-            d.pop('pre_sep2', None)
-
-        if post:
-            d.pop('post', None)
-            d.pop('post_tag', None)
-            d.pop('post_sep1', None)
-            d.pop('post_sep2', None)
-
-        if dev:
-            d.pop('dev', None)
-            d.pop('dev_sep', None)
-
-        return Version(**d)
 
     def replace(self, **kwargs):
         """Return a new :class:`Version` instance with the same attributes,
