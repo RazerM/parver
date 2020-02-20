@@ -52,12 +52,6 @@ _permissive_parser = ParserPEG(
     permissive, root_rule_name='version', skipws=False, ignore_case=True)
 
 
-def unwrap_token(value):
-    if isinstance(value, Token):
-        return value.value
-    return value
-
-
 @attr.s
 class Token(object):
     value = attr.ib()
