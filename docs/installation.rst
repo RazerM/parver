@@ -17,13 +17,13 @@ Git
 .. code-block:: sh
 
    $ git clone https://github.com/RazerM/parver.git
-   Cloning into 'pg_grant'...
+   Cloning into 'parver'...
 
 Check out a `release tag`_
 
 .. parsed-literal::
 
-   $ cd pg_grant
+   $ cd parver
    $ git checkout |version|
 
 .. _`release tag`: https://github.com/RazerM/parver/releases
