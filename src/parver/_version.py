@@ -309,7 +309,21 @@ class Version(object):
             set_('epoch', 0)
             set_('epoch_implicit', True)
 
-        # Validate pre-release parameters.
+        self._validate_pre(set_)
+        self._validate_post(set_)
+        self._validate_dev(set_)
+
+        set_('_key', _cmpkey(
+            self.epoch,
+            self.release,
+            _normalize_pre_tag(self.pre_tag),
+            self.pre,
+            self.post,
+            self.dev,
+            self.local,
+        ))
+
+    def _validate_pre(self, set_):
         if self.pre_tag is None:
             if self.pre is not None:
                 raise ValueError('Must set pre_tag if pre is given.')
@@ -323,18 +337,33 @@ class Version(object):
             elif self.pre is None:
                 raise ValueError('Must set pre if pre_tag is given.')
 
-        if self.post_tag is not UNSET and self.post is None:
+    def _validate_post(self, set_):
+        got_post_tag = self.post_tag is not UNSET
+        got_post = self.post is not None
+        got_post_sep1 = self.post_sep1 is not UNSET
+        got_post_sep2 = self.post_sep2 is not UNSET
+
+        # post_tag relies on post
+        if got_post_tag and not got_post:
             raise ValueError('Must set post if post_tag is given.')
 
-        # Validate parameters for implicit post-release (post_tag=None).
-        # An implicit post-release is e.g. '1-2' (= '1.post2')
-        if self.post_tag is None:
+        if got_post:
+            if not got_post_tag:
+                # user gets the default for post_tag
+                set_('post_tag', 'post')
             if self.post == IMPLICIT_ZERO:
+                set_('post_implicit', True)
+                set_('post', 0)
+
+        # Validate parameters for implicit post-release (post_tag=None).
+        # An implicit post-release is e.g. '1-2' (== '1.post2')
+        if self.post_tag is None:
+            if self.post_implicit:
                 raise ValueError(
                     "Implicit post releases (post_tag=None) require a numerical "
                     "value for 'post' argument.")
 
-            if self.post_sep1 is not UNSET or self.post_sep2 is not UNSET:
+            if got_post_sep1 or got_post_sep2:
                 raise ValueError(
                     'post_sep1 and post_sep2 cannot be set for implicit post '
                     'releases (post_tag=None)')
@@ -345,41 +374,31 @@ class Version(object):
                     "(pre='').")
 
             set_('post_sep1', '-')
+        elif self.post_tag is UNSET:
+            if got_post_sep1 or got_post_sep2:
+                raise ValueError('Cannot set post_sep1 or post_sep2 without post_tag.')
 
-        if self.post is not None:
-            if self.post_tag is UNSET:
-                set_('post_tag', 'post')
-            if self.post == IMPLICIT_ZERO:
-                set_('post_implicit', True)
-                set_('post', 0)
-
-        if self.dev == IMPLICIT_ZERO:
-            set_('dev_implicit', True)
-            set_('dev', 0)
-
-        if self.post_tag is UNSET:
             set_('post_tag', None)
 
-        if self.post_sep1 is UNSET:
+        if not got_post_sep1 and self.post_sep1 is UNSET:
             set_('post_sep1', None if self.post is None else '.')
-        if self.post_sep2 is UNSET:
-            set_('post_sep2', None)
 
-        if self.dev_sep is UNSET:
-            set_('dev_sep', None if self.dev is None else '.')
+        if not got_post_sep2:
+            set_('post_sep2', None)
 
         assert self.post_sep1 is not UNSET
         assert self.post_sep2 is not UNSET
 
-        set_('_key', _cmpkey(
-            self.epoch,
-            self.release,
-            _normalize_pre_tag(self.pre_tag),
-            self.pre,
-            self.post,
-            self.dev,
-            self.local,
-        ))
+    def _validate_dev(self, set_):
+        if self.dev == IMPLICIT_ZERO:
+            set_('dev_implicit', True)
+            set_('dev', 0)
+        elif self.dev is None:
+            if self.dev_sep is not UNSET:
+                raise ValueError('Cannot set dev_sep without dev.')
+
+        if self.dev_sep is UNSET:
+            set_('dev_sep', None if self.dev is None else '.')
 
     @classmethod
     def parse(cls, version, strict=False):

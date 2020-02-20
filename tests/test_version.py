@@ -107,6 +107,10 @@ def test_init(vargs, s):
     dict(post_tag=None, post_sep1='.'),
     dict(post_tag=None, post_sep2='.'),
     dict(post_tag=None, post_sep1='.', post_sep2='.'),
+    dict(pre_tag='a'),
+    dict(dev=None, dev_sep='.'),
+    dict(dev=None, post_sep1='.'),
+    dict(dev=None, post_sep2='.'),
 ])
 def test_invalid(kwargs):
     """Test bad keyword combinations."""
