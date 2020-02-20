@@ -1,0 +1,11 @@
+[build-system]
+requires = ["setuptools>=40.6.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.coverage.run]
+branch = true
+source = ["parver", "tests/"]
+
+[tool.coverage.report]
+precision = 1
+exclude_lines = ["pragma: no cover", "pass"]
