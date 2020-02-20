@@ -318,7 +318,7 @@ def test_attributes(kwargs, values, version):
     v = Version(**kwargs)
     assert str(v) == version
     for key, value in values.items():
-        assert getattr(v, key) == value
+        assert getattr(v, key) == value, key
 
 
 @given(version_strategy())
@@ -369,6 +369,7 @@ def test_replace_roundtrip(version):
         dict(post_tag=None),
         '2-4',
     ),
+    ('1.2.alpha-3_rev.4_dev5', dict(pre=None, post=None, dev=None), '1.2'),
 ])
 def test_replace(before, kwargs, after):
     """Make sure the keys we expect are passed through."""

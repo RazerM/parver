@@ -695,6 +695,19 @@ class Version(object):
             d.pop('post_sep1', None)
             d.pop('post_sep2', None)
 
+        if kwargs.get('post', UNSET) is None:
+            kwargs['post_tag'] = UNSET
+            d.pop('post_sep1', None)
+            d.pop('post_sep2', None)
+
+        if kwargs.get('pre', UNSET) is None:
+            kwargs['pre_tag'] = None
+            d.pop('pre_sep1', None)
+            d.pop('pre_sep2', None)
+
+        if kwargs.get('dev', UNSET) is None:
+            d.pop('dev_sep', None)
+
         d.update(kwargs)
         return Version(**d)
 
