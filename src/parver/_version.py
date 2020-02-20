@@ -664,27 +664,6 @@ class Version(object):
         except for those given as keyword arguments. Arguments have the same
         meaning as they do when constructing a new :class:`Version` instance
         manually.
-
-        .. warning::
-
-            Be careful! :class:`Version` treats `None` as an implicit zero, so
-            pre-release, post release and development releases cannot be
-            cleared using this method:
-
-            .. doctest::
-
-                >>> Version.parse('1.3.post0').replace(post=None)
-                <Version '1.3.post'>
-                >>> Version.parse('1.3').replace(post=None)
-                <Version '1.3.post'>
-
-            Use :meth:`clear` instead:
-
-            .. doctest::
-
-                >>> Version.parse('1.3.post0').clear(post=True)
-                <Version '1.3'>
-
         """
         d = self._attrs_as_init()
 
