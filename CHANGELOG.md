@@ -1,6 +1,9 @@
 # Change Log
 
 ## [Unreleased][unreleased]
+N/A
+
+## [0.3][] - 2020-02-20
 ### Added
 - `Version.truncate` method to remove trailing zeros from the release segment.
 - `Version` now validates each item in the release sequence.
@@ -75,7 +78,8 @@
 
 First release.
 
-[unreleased]: https://github.com/RazerM/parver/compare/0.2.1...HEAD
+[unreleased]: https://github.com/RazerM/parver/compare/0.3...HEAD
+[0.3]: https://github.com/RazerM/parver/compare/0.2.1...0.3
 [0.2.1]: https://github.com/RazerM/parver/compare/0.2...0.2.1
 [0.2]: https://github.com/RazerM/parver/compare/0.1.1...0.2
 [0.1.1]: https://github.com/RazerM/parver/compare/0.1...0.1.1
