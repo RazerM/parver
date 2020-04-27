@@ -2,13 +2,14 @@
 from __future__ import absolute_import, division, print_function
 
 import pytest
-from hypothesis import assume, given
+from hypothesis import assume, given, settings, HealthCheck
 
 from parver import ParseError, Version
 
 from .strategies import version_string, whitespace
 
 
+@settings(suppress_health_check=[HealthCheck.too_slow])
 @given(whitespace, version_string(), whitespace)
 def test_parse_hypothesis(prefix, version, suffix):
     Version.parse(prefix + version + suffix)
