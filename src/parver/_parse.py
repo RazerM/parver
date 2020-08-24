@@ -1,6 +1,8 @@
 # coding: utf-8
 from __future__ import absolute_import, division, print_function
 
+from threading import Lock
+
 import attr
 import six
 from arpeggio import NoMatch, PTNodeVisitor, Terminal, visit_parse_tree
@@ -47,9 +49,8 @@ permissive = r'''
     alpha = r'[0-9]*[a-z][a-z0-9]*'
 '''
 
-_strict_parser = ParserPEG(canonical, root_rule_name='version', skipws=False)
-_permissive_parser = ParserPEG(
-    permissive, root_rule_name='version', skipws=False, ignore_case=True)
+_strict_parser = _permissive_parser = None
+_parser_create_lock = Lock()
 
 
 @attr.s
@@ -195,8 +196,37 @@ class ParseError(ValueError):
     """Raised when parsing an invalid version number."""
 
 
+def _get_parser(strict):
+    """Ensure the module-level peg parser is created and return it."""
+    global _strict_parser, _permissive_parser
+
+    # Each branch below only acquires the lock if the global is unset.
+
+    if strict:
+        if _strict_parser is None:
+            with _parser_create_lock:
+                if _strict_parser is None:
+                    _strict_parser = ParserPEG(
+                        canonical, root_rule_name='version', skipws=False
+                    )
+
+        return _strict_parser
+    else:
+        if _permissive_parser is None:
+            with _parser_create_lock:
+                if _permissive_parser is None:
+                    _permissive_parser = ParserPEG(
+                        permissive,
+                        root_rule_name='version',
+                        skipws=False,
+                        ignore_case=True,
+                    )
+
+        return _permissive_parser
+
+
 def parse(version, strict=False):
-    parser = _strict_parser if strict else _permissive_parser
+    parser = _get_parser(strict)
 
     try:
         tree = parser.parse(version.strip())
