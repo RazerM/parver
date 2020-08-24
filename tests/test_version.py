@@ -2,7 +2,7 @@
 from __future__ import absolute_import, division, print_function
 
 import pytest
-from hypothesis import given
+from hypothesis import HealthCheck, given, settings
 
 from parver import Version
 
@@ -322,6 +322,7 @@ def test_attributes(kwargs, values, version):
 
 
 @given(version_strategy())
+@settings(suppress_health_check=[HealthCheck.too_slow])
 def test_replace_roundtrip(version):
     """All the logic inside replace() is in converting the attributes to the
     form expected by __init__, so this function tests most of that.
