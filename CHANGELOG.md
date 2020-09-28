@@ -3,6 +3,15 @@
 ## [Unreleased][unreleased]
 N/A
 
+## [0.3.1][] - 2020-09-28
+### Added
+- Grammar is parsed when first used to improve import time.
+
+### Fixed
+- attrs deprecation warning. The minimum attrs version is now 19.2
+- Errors raised for keyword-only argument errors on Python 3 did not have the
+  right error message.
+
 ## [0.3][] - 2020-02-20
 ### Added
 - `Version.truncate` method to remove trailing zeros from the release segment.
@@ -78,7 +87,8 @@ N/A
 
 First release.
 
-[unreleased]: https://github.com/RazerM/parver/compare/0.3...HEAD
+[unreleased]: https://github.com/RazerM/parver/compare/0.3.1...HEAD
+[0.3.1]: https://github.com/RazerM/parver/compare/0.3...0.3.1
 [0.3]: https://github.com/RazerM/parver/compare/0.2.1...0.3
 [0.2.1]: https://github.com/RazerM/parver/compare/0.2...0.2.1
 [0.2]: https://github.com/RazerM/parver/compare/0.1.1...0.2
