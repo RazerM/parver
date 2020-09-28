@@ -4,6 +4,9 @@
 N/A
 
 ## [0.3.1][] - 2020-09-28
+### Added
+- Grammar is parsed when first used to improve import time.
+
 ### Fixed
 - attrs deprecation warning. The minimum attrs version is now 19.2
 - Errors raised for keyword-only argument errors on Python 3 did not have the
