@@ -1,6 +1,8 @@
 # coding: utf-8
 from __future__ import absolute_import, division, print_function
 
+from collections import OrderedDict
+
 import pytest
 
 from parver._helpers import force_tuple, kwonly_args
@@ -30,6 +32,19 @@ def fn2(a, *args, **kwargs):
     return a, b, kwargs
 
 
+def fn3(**kwargs):
+    kwonly_args(kwargs, ('a', 'b'))
+
+
+def fn4(**kwargs):
+    kwonly_args(kwargs, ('a', 'b', 'c'))
+
+
+def fn5(**kwargs):
+    kwargs, b, c = kwonly_args(kwargs, ('b',), OrderedDict([('c', 5)]))
+    return b, c
+
+
 @pytest.mark.parametrize('fn, args, kwargs, result', [
     (fn1, (1,), dict(b=2), (1, 2, 5)),
     (fn1, (1,), dict(b=2, c=3), (1, 2, 3)),
@@ -37,6 +52,9 @@ def fn2(a, *args, **kwargs):
     (fn1, (1,), dict(b=2, d=4), TypeError),
     (fn2, (1,), dict(b=2), (1, 2, {})),
     (fn2, (1,), dict(b=2, c=3), (1, 2, dict(c=3))),
+    (fn3, (), dict(), TypeError),
+    (fn4, (), dict(), TypeError),
+    (fn5, (), dict(b=4), (4, 5)),
 ])
 def test_kwonly_args(fn, args, kwargs, result):
     """Based on the snippet by Eric Snow
