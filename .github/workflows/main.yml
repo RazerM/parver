@@ -12,8 +12,6 @@ jobs:
   tests:
     name: "Python ${{ matrix.python-version }}"
     runs-on: "ubuntu-latest"
-    env:
-      USING_COVERAGE: '3.6,3.8'
 
     strategy:
       matrix:
@@ -34,3 +32,9 @@ jobs:
 
       - name: "Run tox targets for ${{ matrix.python-version }}"
         run: "python -m tox"
+      - name: "Convert coverage"
+        run: "python -m coverage xml"
+      - name: "Upload coverage to Codecov"
+        uses: "codecov/codecov-action@v1"
+        with:
+          fail_ci_if_error: true
