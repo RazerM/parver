@@ -89,9 +89,7 @@ def sequence_of(validator, allow_empty=False):
         is_seq(inst, attr, value)
 
         if not allow_empty and not value:
-            raise ValueError(
-                "'{name}' cannot be empty".format(name=attr.name, value=value)
-            )
+            raise ValueError("'{name}' cannot be empty".format(name=attr.name))
 
         for i, item in enumerate(value):
             try:

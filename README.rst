@@ -6,9 +6,9 @@
    :target: https://parver.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
-.. image:: https://travis-ci.org/RazerM/parver.svg?branch=master
-   :target: https://travis-ci.org/RazerM/parver
-   :alt: Automated test status
+.. image:: https://github.com/RazerM/parver/workflows/CI/badge.svg?branch=master
+   :target: https://github.com/RazerM/parver/actions?workflow=CI
+   :alt: CI Status
 
 .. image:: https://codecov.io/gh/RazerM/parver/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/RazerM/parver
