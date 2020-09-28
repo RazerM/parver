@@ -165,7 +165,7 @@ def kwonly_args(kws, required, withdefaults=(), leftovers=False):
     # handle any leftovers
     if not leftovers and kws:
         msg = "got an unexpected keyword argument '%s'"
-        raise TypeError(msg % (kws.keys()[0]))
+        raise TypeError(msg % (next(iter(kws.keys()))))
 
     return [kws] + kwonly
 

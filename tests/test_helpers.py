@@ -33,8 +33,6 @@ def fn2(a, *args, **kwargs):
 @pytest.mark.parametrize('fn, args, kwargs, result', [
     (fn1, (1,), dict(b=2), (1, 2, 5)),
     (fn1, (1,), dict(b=2, c=3), (1, 2, 3)),
-    (fn1, (), dict(b=2), TypeError),
-    (fn1, (1, 2), dict(), TypeError),
     (fn1, (1,), dict(c=2), TypeError),
     (fn1, (1,), dict(b=2, d=4), TypeError),
     (fn2, (1,), dict(b=2), (1, 2, {})),
@@ -52,7 +50,7 @@ def test_kwonly_args(fn, args, kwargs, result):
         isexception = False
 
     if isexception:
-        with pytest.raises(result):
+        with pytest.raises(result, match='keyword'):
             fn(*args, **kwargs)
     else:
         assert fn(*args, **kwargs) == result
