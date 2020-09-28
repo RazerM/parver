@@ -113,7 +113,7 @@ def sequence_of(validator, allow_empty=False):
     return validate
 
 
-@attr.s(frozen=True, repr=False, cmp=False)
+@attr.s(frozen=True, repr=False, eq=False)
 class Version(object):
     """
 
