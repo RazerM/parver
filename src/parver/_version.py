@@ -1,21 +1,16 @@
-# coding: utf-8
-from __future__ import absolute_import, division, print_function
-
 import copy
 import itertools
 import operator
 import re
+from collections.abc import Sequence
 from functools import partial
 
 import attr
-import six
-from six.moves.collections_abc import Sequence
 from attr.validators import and_, in_, instance_of, optional
 
 from . import _segments as segment
 from ._helpers import (
-    IMPLICIT_ZERO, UNSET, Infinity, doc_signature, force_lower, force_tuple,
-    kwonly_args, last)
+    IMPLICIT_ZERO, UNSET, Infinity, force_lower, force_tuple, last)
 from ._parse import parse
 
 POST_TAGS = {'post', 'rev', 'r'}
@@ -73,8 +68,8 @@ validate_pre_tag = optional(in_(PRE_TAGS))
 validate_sep = optional(in_(SEPS))
 validate_sep_or_unset = unset_or(optional(in_(SEPS)))
 is_bool = instance_of(bool)
-is_int = instance_of(six.integer_types)
-is_str = instance_of(six.string_types)
+is_int = instance_of(int)
+is_str = instance_of(str)
 is_seq = instance_of(Sequence)
 
 # "All numeric components MUST be non-negative integers."
@@ -89,7 +84,7 @@ def sequence_of(validator, allow_empty=False):
         is_seq(inst, attr, value)
 
         if not allow_empty and not value:
-            raise ValueError("'{name}' cannot be empty".format(name=attr.name))
+            raise ValueError(f"'{attr.name}' cannot be empty")
 
         for i, item in enumerate(value):
             try:
@@ -99,11 +94,11 @@ def sequence_of(validator, allow_empty=False):
                 # with a better attribute name. Since we have to copy data,
                 # we only do it when we know we have to raise an exception.
                 item_attr = copy.copy(attr)
-                object.__setattr__(item_attr, 'name', '{}[{}]'.format(attr.name, i))
+                object.__setattr__(item_attr, 'name', f'{attr.name}[{i}]')
                 try:
                     validator(inst, item_attr, item)
                 except Exception as exc:
-                    six.raise_from(exc, None)
+                    raise exc from None
                 else:
                     # if we somehow got here, raise original exception
                     raise
@@ -112,7 +107,7 @@ def sequence_of(validator, allow_empty=False):
 
 
 @attr.s(frozen=True, repr=False, eq=False)
-class Version(object):
+class Version:
     """
 
     :param release: Numbers for the release segment.
@@ -449,7 +444,7 @@ class Version(object):
             elif isinstance(s, segment.V):
                 kwargs['v'] = True
             else:
-                raise TypeError('Unexpected segment: {}'.format(segment))
+                raise TypeError(f'Unexpected segment: {segment}')
 
         return cls(**kwargs)
 
@@ -471,7 +466,7 @@ class Version(object):
             parts.append('v')
 
         if not self.epoch_implicit:
-            parts.append('{}!'.format(self.epoch))
+            parts.append(f'{self.epoch}!')
 
         parts.append('.'.join(str(x) for x in self.release))
 
@@ -485,7 +480,7 @@ class Version(object):
                 parts.append(str(self.pre))
 
         if self.post_tag is None and self.post is not None:
-            parts.append('-{}'.format(self.post))
+            parts.append(f'-{self.post}')
         elif self.post_tag is not None:
             if self.post_sep1:
                 parts.append(self.post_sep1)
@@ -503,12 +498,12 @@ class Version(object):
                 parts.append(str(self.dev))
 
         if self.local is not None:
-            parts.append('+{}'.format(self.local))
+            parts.append(f'+{self.local}')
 
         return ''.join(parts)
 
     def __repr__(self):
-        return '<{} {!r}>'.format(self.__class__.__name__, str(self))
+        return f'<{self.__class__.__name__} {str(self)!r}>'
 
     def __hash__(self):
         return hash(self._key)
@@ -689,8 +684,7 @@ class Version(object):
         release = itertools.starmap(new_parts, enumerate(release))
         return self.replace(release=release)
 
-    @doc_signature('(*, by=1)')
-    def bump_epoch(self, **kwargs):
+    def bump_epoch(self, *, by=1):
         """Return a new :class:`Version` instance with the epoch number
         bumped.
 
@@ -706,14 +700,12 @@ class Version(object):
             >>> Version.parse('2!1.4').bump_epoch(by=-1)
             <Version '1!1.4'>
         """
-        _, by = kwonly_args(kwargs, (), [('by', 1)])
         check_by(by, self.epoch)
 
         epoch = by - 1 if self.epoch is None else self.epoch + by
         return self.replace(epoch=epoch)
 
-    @doc_signature('(*, index)')
-    def bump_release(self, **kwargs):
+    def bump_release(self, *, index):
         """Return a new :class:`Version` instance with the release number
         bumped at the given `index`.
 
@@ -746,11 +738,9 @@ class Version(object):
             the value at a specific index without setting subsequenct indices
             to zero.
         """
-        _, index = kwonly_args(kwargs, ('index',))
         return self._set_release(index=index)
 
-    @doc_signature('(*, index, value)')
-    def bump_release_to(self, **kwargs):
+    def bump_release_to(self, *, index, value):
         """Return a new :class:`Version` instance with the release number
         bumped at the given `index` to `value`. May be used for versioning
         schemes such as `CalVer`_.
@@ -799,11 +789,9 @@ class Version(object):
             the value at a specific index without setting subsequenct indices
             to zero.
         """
-        _, index, value = kwonly_args(kwargs, ('index', 'value'))
         return self._set_release(index=index, value=value)
 
-    @doc_signature('(*, index, value)')
-    def set_release(self, **kwargs):
+    def set_release(self, *, index, value):
         """Return a new :class:`Version` instance with the release number
         at the given `index` set to `value`.
 
@@ -829,11 +817,9 @@ class Version(object):
 
             For typical use cases, see :meth:`bump_release`.
         """
-        _, index, value = kwonly_args(kwargs, ('index', 'value'))
         return self._set_release(index=index, value=value, bump=False)
 
-    @doc_signature('(tag=None, *, by=1)')
-    def bump_pre(self, tag=None, **kwargs):
+    def bump_pre(self, tag=None, *, by=1):
         """Return a new :class:`Version` instance with the pre-release number
         bumped.
 
@@ -857,7 +843,6 @@ class Version(object):
             >>> Version.parse('1.4b1').bump_pre(by=-1)
             <Version '1.4b0'>
         """
-        _, by = kwonly_args(kwargs, (), [('by', 1)])
         check_by(by, self.pre)
 
         pre = by - 1 if self.pre is None else self.pre + by
@@ -876,8 +861,7 @@ class Version(object):
 
         return self.replace(pre=pre, pre_tag=tag)
 
-    @doc_signature('(tag=None, *, by=1)')
-    def bump_post(self, tag=UNSET, **kwargs):
+    def bump_post(self, tag=UNSET, *, by=1):
         """Return a new :class:`Version` instance with the post release number
         bumped.
 
@@ -900,7 +884,6 @@ class Version(object):
             >>> Version.parse('1.4.post2').bump_post(by=-1)
             <Version '1.4.post1'>
         """
-        _, by = kwonly_args(kwargs, (), [('by', 1)])
         check_by(by, self.post)
 
         post = by - 1 if self.post is None else self.post + by
@@ -908,8 +891,7 @@ class Version(object):
             tag = self.post_tag
         return self.replace(post=post, post_tag=tag)
 
-    @doc_signature('(*, by=1)')
-    def bump_dev(self, **kwargs):
+    def bump_dev(self, *, by=1):
         """Return a new :class:`Version` instance with the development release
         number bumped.
 
@@ -927,14 +909,12 @@ class Version(object):
             >>> Version.parse('1.4.dev3').bump_dev(by=-1)
             <Version '1.4.dev2'>
         """
-        _, by = kwonly_args(kwargs, (), [('by', 1)])
         check_by(by, self.dev)
 
         dev = by - 1 if self.dev is None else self.dev + by
         return self.replace(dev=dev)
 
-    @doc_signature('(*, min_length=1)')
-    def truncate(self, **kwargs):
+    def truncate(self, *, min_length=1):
         """Return a new :class:`Version` instance with trailing zeros removed
         from the release segment.
 
@@ -950,8 +930,6 @@ class Version(object):
             >>> Version.parse('1').truncate(min_length=2)
             <Version '1.0'>
         """
-        _, min_length = kwonly_args(kwargs, (), [('min_length', 1)])
-
         if not isinstance(min_length, int):
             raise TypeError('min_length must be an integer')
 

@@ -1,11 +1,8 @@
-# coding: utf-8
-from __future__ import absolute_import, division, print_function
-
 import attr
 
 
 @attr.s(slots=True)
-class Segment(object):
+class Segment:
     pass
 
 

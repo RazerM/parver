@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # parver documentation build configuration file.
 #
@@ -11,7 +10,6 @@
 #
 # All configuration values have a default; values that are commented out
 # serve to show the default.
-from __future__ import absolute_import, division, print_function
 
 import os
 import sys
@@ -37,7 +35,6 @@ extensions = [
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
-    'parverdoc',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -78,7 +75,7 @@ VERSION = '.'.join(str(n) for n in ver_parts if isinstance(n, Number))
 
 # General information about the project.
 project = 'parver'
-copyright = '2018, {}'.format(AUTHOR)
+copyright = f'2018, {AUTHOR}'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

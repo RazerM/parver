@@ -1,13 +1,8 @@
-# coding: utf-8
-from __future__ import absolute_import, division, print_function
-
 from collections import deque
-
-import six
-from six.moves.collections_abc import Iterable
+from collections.abc import Iterable
 
 
-class UnsetType(object):
+class UnsetType:
     def __repr__(self):
         return 'UNSET'
 
@@ -16,7 +11,7 @@ UNSET = UnsetType()
 del UnsetType
 
 
-class Infinity(object):
+class Infinity:
 
     def __repr__(self):
         return "Infinity"
@@ -49,7 +44,7 @@ class Infinity(object):
 Infinity = Infinity()
 
 
-class NegativeInfinity(object):
+class NegativeInfinity:
 
     def __repr__(self):
         return "-Infinity"
@@ -97,7 +92,7 @@ def fixup_module_metadata(module_name, namespace):
 
 
 def force_tuple(n):
-    if isinstance(n, six.string_types):
+    if isinstance(n, str):
         raise TypeError('Expected an iterable or int.')
     if not isinstance(n, Iterable):
         return n,
@@ -114,65 +109,7 @@ def force_lower(s):
     return s
 
 
-def doc_signature(signature):
-    def decorator(fn):
-        fn.__parverdoc_signature__ = signature
-        return fn
-    return decorator
-
-
-def kwonly_args(kws, required, withdefaults=(), leftovers=False):
-    """
-    Based on the snippet by Eric Snow
-    http://code.activestate.com/recipes/577940
-
-    SPDX-License-Identifier: MIT
-    """
-
-    if hasattr(withdefaults, 'items'):
-        # allows for OrderedDict to be passed
-        withdefaults = withdefaults.items()
-
-    kwonly = []
-
-    # extract the required keyword-only arguments
-    missing = []
-    for name in required:
-        if name not in kws:
-            missing.append(name)
-        else:
-            kwonly.append(kws.pop(name))
-
-    # validate required keyword-only arguments
-    if missing:
-        if len(missing) > 2:
-            end = 's: %s, and %s' % (', '.join(missing[:-1]), missing[-1])
-        elif len(missing) == 2:
-            end = 's: %s and %s' % tuple(missing)
-        else:
-            end = ': %s' % tuple(missing)
-
-        msg = 'missing %s required keyword-only argument%s'
-        raise TypeError(msg % (len(missing), end))
-
-    # handle the withdefaults
-    for name, value in withdefaults:
-        if name not in kws:
-            kwonly.append(value)
-        else:
-            kwonly.append(kws.pop(name))
-
-    # handle any leftovers
-    if not leftovers and kws:
-        msg = "got an unexpected keyword argument '%s'"
-        raise TypeError(msg % (next(iter(kws.keys()))))
-
-    return [kws] + kwonly
-
-
-def last(iterable, **kwargs):
-    _, default = kwonly_args(kwargs, (), dict(default=UNSET))
-
+def last(iterable, *, default=UNSET):
     try:
         return deque(iterable, maxlen=1).pop()
     except IndexError:

@@ -1,11 +1,9 @@
-# coding: utf-8
 """The tests in this file have been adapted from the excellent test suite in
 packaging.version. See https://github.com/pypa/packaging
 
 Copyright (c) Donald Stufft and individual contributors.
 https://github.com/pypa/packaging/blob/master/LICENSE
 """
-from __future__ import absolute_import, division, print_function
 
 import itertools
 import operator
@@ -251,7 +249,7 @@ class TestVersion:
     def test_version_str_repr(self, version, expected):
         v = Version.parse(version).normalize()
         assert str(v) == expected
-        assert (repr(v) == "<Version {0}>".format(repr(expected)))
+        assert (repr(v) == f"<Version {repr(expected)}>")
 
     def test_version_rc_and_c_equals(self):
         assert Version.parse("1.0rc1") == Version.parse("1.0c1")
@@ -724,7 +722,7 @@ class TestVersion:
     @pytest.mark.parametrize(("op", "expected"), [("eq", False), ("ne", True)])
     def test_compare_other(self, op, expected):
         other = pretend.stub(
-            **{"__{0}__".format(op): lambda other: NotImplemented}
+            **{f"__{op}__": lambda other: NotImplemented}
         )
 
         assert getattr(operator, op)(Version.parse("1"), other) is expected

@@ -1,10 +1,6 @@
-# coding: utf-8
-from __future__ import absolute_import, division, print_function
-
 from threading import Lock
 
 import attr
-import six
 from arpeggio import NoMatch, PTNodeVisitor, Terminal, visit_parse_tree
 from arpeggio.cleanpeg import ParserPEG
 
@@ -54,7 +50,7 @@ _parser_create_lock = Lock()
 
 
 @attr.s
-class Token(object):
+class Token:
     value = attr.ib()
 
 
@@ -231,6 +227,6 @@ def parse(version, strict=False):
     try:
         tree = parser.parse(version.strip())
     except NoMatch as exc:
-        six.raise_from(ParseError(str(exc)), None)
+        raise ParseError(str(exc)) from None
 
     return visit_parse_tree(tree, VersionVisitor())

@@ -1,8 +1,3 @@
-# coding: utf-8
-from __future__ import absolute_import, division, print_function
-
-from io import open
-
 from setuptools import find_packages, setup
 
 about = dict()
@@ -51,19 +46,14 @@ setup(
     install_requires=[
         'arpeggio ~= 1.7',
         'attrs >= 19.2',
-        'six ~= 1.13',
     ],
     extras_require=extras_require,
-    python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*',
+    python_requires='>=3.7',
     keywords='pep440 version parse',
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
