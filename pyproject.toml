@@ -12,3 +12,6 @@ source = ["src/parver", ".tox/*/lib/python*/site-packages/parver"]
 [tool.coverage.report]
 precision = 1
 exclude_lines = ["pragma: no cover", "pass"]
+
+[tool.isort]
+multi_line_output = 4
