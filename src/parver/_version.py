@@ -1,4 +1,3 @@
-import copy
 import itertools
 import operator
 import re
@@ -6,7 +5,7 @@ from collections.abc import Sequence
 from functools import partial
 
 import attr
-from attr.validators import and_, in_, instance_of, optional
+from attr.validators import and_, deep_iterable, in_, instance_of, optional
 
 from . import _segments as segment
 from ._helpers import (
@@ -55,6 +54,11 @@ def is_non_negative(inst, attr, value):
         )
 
 
+def non_empty(inst, attr, value):
+    if not value:
+        raise ValueError(f"'{attr.name}' cannot be empty")
+
+
 def check_by(by, current):
     if not isinstance(by, int):
         raise TypeError('by must be an integer')
@@ -71,39 +75,12 @@ is_bool = instance_of(bool)
 is_int = instance_of(int)
 is_str = instance_of(str)
 is_seq = instance_of(Sequence)
+is_tuple = instance_of(tuple)
 
 # "All numeric components MUST be non-negative integers."
 num_comp = [not_bool, is_int, is_non_negative]
 
-
-def sequence_of(validator, allow_empty=False):
-    if isinstance(validator, list):
-        validator = and_(*validator)
-
-    def validate(inst, attr, value):
-        is_seq(inst, attr, value)
-
-        if not allow_empty and not value:
-            raise ValueError(f"'{attr.name}' cannot be empty")
-
-        for i, item in enumerate(value):
-            try:
-                validator(inst, attr, item)
-            except (ValueError, TypeError):
-                # now that we know it's invalid, let's re-do the validation
-                # with a better attribute name. Since we have to copy data,
-                # we only do it when we know we have to raise an exception.
-                item_attr = copy.copy(attr)
-                object.__setattr__(item_attr, 'name', f'{attr.name}[{i}]')
-                try:
-                    validator(inst, item_attr, item)
-                except Exception as exc:
-                    raise exc from None
-                else:
-                    # if we somehow got here, raise original exception
-                    raise
-
-    return validate
+release_validator = deep_iterable(and_(*num_comp), and_(is_tuple, non_empty))
 
 
 @attr.s(frozen=True, repr=False, eq=False)
@@ -273,7 +250,7 @@ class Version:
         #implicit-post-releases
 
     """
-    release = attr.ib(converter=force_tuple, validator=sequence_of(num_comp))
+    release = attr.ib(converter=force_tuple, validator=release_validator)
     v = attr.ib(default=False, validator=is_bool)
     epoch = attr.ib(default=IMPLICIT_ZERO, validator=implicit_or(num_comp))
     pre_tag = attr.ib(default=None, validator=validate_pre_tag)
