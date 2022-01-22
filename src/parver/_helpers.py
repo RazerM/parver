@@ -4,7 +4,7 @@ from collections.abc import Iterable
 
 class UnsetType:
     def __repr__(self):
-        return 'UNSET'
+        return "UNSET"
 
 
 UNSET = UnsetType()
@@ -12,7 +12,6 @@ del UnsetType
 
 
 class Infinity:
-
     def __repr__(self):
         return "Infinity"
 
@@ -45,7 +44,6 @@ Infinity = Infinity()
 
 
 class NegativeInfinity:
-
     def __repr__(self):
         return "-Infinity"
 
@@ -79,23 +77,23 @@ NegativeInfinity = NegativeInfinity()
 
 def fixup_module_metadata(module_name, namespace):
     def fix_one(obj):
-        mod = getattr(obj, '__module__', None)
-        if mod is not None and mod.startswith('parver.'):
+        mod = getattr(obj, "__module__", None)
+        if mod is not None and mod.startswith("parver."):
             obj.__module__ = module_name
             if isinstance(obj, type):
                 for attr_value in obj.__dict__.values():
                     fix_one(attr_value)
 
-    for objname in namespace['__all__']:
+    for objname in namespace["__all__"]:
         obj = namespace[objname]
         fix_one(obj)
 
 
 def force_tuple(n):
     if isinstance(n, str):
-        raise TypeError('Expected an iterable or int.')
+        raise TypeError("Expected an iterable or int.")
     if not isinstance(n, Iterable):
-        return n,
+        return (n,)
     if not isinstance(n, tuple):
         return tuple(n)
     return n
@@ -118,4 +116,4 @@ def last(iterable, *, default=UNSET):
         return default
 
 
-IMPLICIT_ZERO = ''
+IMPLICIT_ZERO = ""

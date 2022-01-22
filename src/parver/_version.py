@@ -8,13 +8,12 @@ import attr
 from attr.validators import and_, deep_iterable, in_, instance_of, optional
 
 from . import _segments as segment
-from ._helpers import (
-    IMPLICIT_ZERO, UNSET, Infinity, force_lower, force_tuple, last)
+from ._helpers import IMPLICIT_ZERO, UNSET, Infinity, force_lower, force_tuple, last
 from ._parse import parse
 
-POST_TAGS = {'post', 'rev', 'r'}
-SEPS = {'.', '-', '_'}
-PRE_TAGS = {'c', 'rc', 'alpha', 'a', 'beta', 'b', 'preview', 'pre'}
+POST_TAGS = {"post", "rev", "r"}
+SEPS = {".", "-", "_"}
+PRE_TAGS = {"c", "rc", "alpha", "a", "beta", "b", "preview", "pre"}
 
 
 def unset_or(validator):
@@ -23,6 +22,7 @@ def unset_or(validator):
             return
 
         validator(inst, attr, value)
+
     return validate
 
 
@@ -35,22 +35,25 @@ def implicit_or(validator):
             return
 
         validator(inst, attr, value)
+
     return validate
 
 
 def not_bool(inst, attr, value):
     if isinstance(value, bool):
         raise TypeError(
-            "'{name}' must not be a bool (got {value!r})"
-            .format(name=attr.name, value=value)
+            "'{name}' must not be a bool (got {value!r})".format(
+                name=attr.name, value=value
+            )
         )
 
 
 def is_non_negative(inst, attr, value):
     if value < 0:
         raise ValueError(
-            "'{name}' must be non-negative (got {value!r})"
-            .format(name=attr.name, value=value)
+            "'{name}' must be non-negative (got {value!r})".format(
+                name=attr.name, value=value
+            )
         )
 
 
@@ -61,10 +64,10 @@ def non_empty(inst, attr, value):
 
 def check_by(by, current):
     if not isinstance(by, int):
-        raise TypeError('by must be an integer')
+        raise TypeError("by must be an integer")
 
     if current is None and by < 0:
-        raise ValueError('Cannot bump by negative amount when current value is unset.')
+        raise ValueError("Cannot bump by negative amount when current value is unset.")
 
 
 validate_post_tag = unset_or(optional(in_(POST_TAGS)))
@@ -250,6 +253,7 @@ class Version:
         #implicit-post-releases
 
     """
+
     release = attr.ib(converter=force_tuple, validator=release_validator)
     v = attr.ib(default=False, validator=is_bool)
     epoch = attr.ib(default=IMPLICIT_ZERO, validator=implicit_or(num_comp))
@@ -276,36 +280,39 @@ class Version:
         set_ = partial(object.__setattr__, self)
 
         if self.epoch == IMPLICIT_ZERO:
-            set_('epoch', 0)
-            set_('epoch_implicit', True)
+            set_("epoch", 0)
+            set_("epoch_implicit", True)
 
         self._validate_pre(set_)
         self._validate_post(set_)
         self._validate_dev(set_)
 
-        set_('_key', _cmpkey(
-            self.epoch,
-            self.release,
-            _normalize_pre_tag(self.pre_tag),
-            self.pre,
-            self.post,
-            self.dev,
-            self.local,
-        ))
+        set_(
+            "_key",
+            _cmpkey(
+                self.epoch,
+                self.release,
+                _normalize_pre_tag(self.pre_tag),
+                self.pre,
+                self.post,
+                self.dev,
+                self.local,
+            ),
+        )
 
     def _validate_pre(self, set_):
         if self.pre_tag is None:
             if self.pre is not None:
-                raise ValueError('Must set pre_tag if pre is given.')
+                raise ValueError("Must set pre_tag if pre is given.")
 
             if self.pre_sep1 is not None or self.pre_sep2 is not None:
-                raise ValueError('Cannot set pre_sep1 or pre_sep2 without pre_tag.')
+                raise ValueError("Cannot set pre_sep1 or pre_sep2 without pre_tag.")
         else:
             if self.pre == IMPLICIT_ZERO:
-                set_('pre', 0)
-                set_('pre_implicit', True)
+                set_("pre", 0)
+                set_("pre_implicit", True)
             elif self.pre is None:
-                raise ValueError('Must set pre if pre_tag is given.')
+                raise ValueError("Must set pre if pre_tag is given.")
 
     def _validate_post(self, set_):
         got_post_tag = self.post_tag is not UNSET
@@ -315,15 +322,15 @@ class Version:
 
         # post_tag relies on post
         if got_post_tag and not got_post:
-            raise ValueError('Must set post if post_tag is given.')
+            raise ValueError("Must set post if post_tag is given.")
 
         if got_post:
             if not got_post_tag:
                 # user gets the default for post_tag
-                set_('post_tag', 'post')
+                set_("post_tag", "post")
             if self.post == IMPLICIT_ZERO:
-                set_('post_implicit', True)
-                set_('post', 0)
+                set_("post_implicit", True)
+                set_("post", 0)
 
         # Validate parameters for implicit post-release (post_tag=None).
         # An implicit post-release is e.g. '1-2' (== '1.post2')
@@ -331,44 +338,46 @@ class Version:
             if self.post_implicit:
                 raise ValueError(
                     "Implicit post releases (post_tag=None) require a numerical "
-                    "value for 'post' argument.")
+                    "value for 'post' argument."
+                )
 
             if got_post_sep1 or got_post_sep2:
                 raise ValueError(
-                    'post_sep1 and post_sep2 cannot be set for implicit post '
-                    'releases (post_tag=None)')
+                    "post_sep1 and post_sep2 cannot be set for implicit post "
+                    "releases (post_tag=None)"
+                )
 
             if self.pre_implicit:
                 raise ValueError(
-                    'post_tag cannot be None with an implicit pre-release '
-                    "(pre='').")
+                    "post_tag cannot be None with an implicit pre-release (pre='')."
+                )
 
-            set_('post_sep1', '-')
+            set_("post_sep1", "-")
         elif self.post_tag is UNSET:
             if got_post_sep1 or got_post_sep2:
-                raise ValueError('Cannot set post_sep1 or post_sep2 without post_tag.')
+                raise ValueError("Cannot set post_sep1 or post_sep2 without post_tag.")
 
-            set_('post_tag', None)
+            set_("post_tag", None)
 
         if not got_post_sep1 and self.post_sep1 is UNSET:
-            set_('post_sep1', None if self.post is None else '.')
+            set_("post_sep1", None if self.post is None else ".")
 
         if not got_post_sep2:
-            set_('post_sep2', None)
+            set_("post_sep2", None)
 
         assert self.post_sep1 is not UNSET
         assert self.post_sep2 is not UNSET
 
     def _validate_dev(self, set_):
         if self.dev == IMPLICIT_ZERO:
-            set_('dev_implicit', True)
-            set_('dev', 0)
+            set_("dev_implicit", True)
+            set_("dev", 0)
         elif self.dev is None:
             if self.dev_sep is not UNSET:
-                raise ValueError('Cannot set dev_sep without dev.')
+                raise ValueError("Cannot set dev_sep without dev.")
 
         if self.dev_sep is UNSET:
-            set_('dev_sep', None if self.dev is None else '.')
+            set_("dev_sep", None if self.dev is None else ".")
 
     @classmethod
     def parse(cls, version, strict=False):
@@ -400,28 +409,28 @@ class Version:
 
         for s in segments:
             if isinstance(s, segment.Epoch):
-                kwargs['epoch'] = s.value
+                kwargs["epoch"] = s.value
             elif isinstance(s, segment.Release):
-                kwargs['release'] = s.value
+                kwargs["release"] = s.value
             elif isinstance(s, segment.Pre):
-                kwargs['pre'] = s.value
-                kwargs['pre_tag'] = s.tag
-                kwargs['pre_sep1'] = s.sep1
-                kwargs['pre_sep2'] = s.sep2
+                kwargs["pre"] = s.value
+                kwargs["pre_tag"] = s.tag
+                kwargs["pre_sep1"] = s.sep1
+                kwargs["pre_sep2"] = s.sep2
             elif isinstance(s, segment.Post):
-                kwargs['post'] = s.value
-                kwargs['post_tag'] = s.tag
-                kwargs['post_sep1'] = s.sep1
-                kwargs['post_sep2'] = s.sep2
+                kwargs["post"] = s.value
+                kwargs["post_tag"] = s.tag
+                kwargs["post_sep1"] = s.sep1
+                kwargs["post_sep2"] = s.sep2
             elif isinstance(s, segment.Dev):
-                kwargs['dev'] = s.value
-                kwargs['dev_sep'] = s.sep
+                kwargs["dev"] = s.value
+                kwargs["dev_sep"] = s.sep
             elif isinstance(s, segment.Local):
-                kwargs['local'] = s.value
+                kwargs["local"] = s.value
             elif isinstance(s, segment.V):
-                kwargs['v'] = True
+                kwargs["v"] = True
             else:
-                raise TypeError(f'Unexpected segment: {segment}')
+                raise TypeError(f"Unexpected segment: {segment}")
 
         return cls(**kwargs)
 
@@ -440,12 +449,12 @@ class Version:
         parts = []
 
         if self.v:
-            parts.append('v')
+            parts.append("v")
 
         if not self.epoch_implicit:
-            parts.append(f'{self.epoch}!')
+            parts.append(f"{self.epoch}!")
 
-        parts.append('.'.join(str(x) for x in self.release))
+        parts.append(".".join(str(x) for x in self.release))
 
         if self.pre_tag is not None:
             if self.pre_sep1:
@@ -457,7 +466,7 @@ class Version:
                 parts.append(str(self.pre))
 
         if self.post_tag is None and self.post is not None:
-            parts.append(f'-{self.post}')
+            parts.append(f"-{self.post}")
         elif self.post_tag is not None:
             if self.post_sep1:
                 parts.append(self.post_sep1)
@@ -470,17 +479,17 @@ class Version:
         if self.dev is not None:
             if self.dev_sep is not None:
                 parts.append(self.dev_sep)
-            parts.append('dev')
+            parts.append("dev")
             if not self.dev_implicit:
                 parts.append(str(self.dev))
 
         if self.local is not None:
-            parts.append(f'+{self.local}')
+            parts.append(f"+{self.local}")
 
-        return ''.join(parts)
+        return "".join(parts)
 
     def __repr__(self):
-        return f'<{self.__class__.__name__} {str(self)!r}>'
+        return f"<{self.__class__.__name__} {str(self)!r}>"
 
     def __hash__(self):
         return hash(self._key)
@@ -514,7 +523,7 @@ class Version:
         """A string representing the public version portion of this
         :class:`Version` instance.
         """
-        return str(self).split('+', 1)[0]
+        return str(self).split("+", 1)[0]
 
     def base_version(self):
         """Return a new :class:`Version` instance for the base version of the
@@ -537,21 +546,21 @@ class Version:
         """A boolean value indicating whether this :class:`Version` instance
         represents an alpha pre-release.
         """
-        return _normalize_pre_tag(self.pre_tag) == 'a'
+        return _normalize_pre_tag(self.pre_tag) == "a"
 
     @property
     def is_beta(self):
         """A boolean value indicating whether this :class:`Version` instance
         represents a beta pre-release.
         """
-        return _normalize_pre_tag(self.pre_tag) == 'b'
+        return _normalize_pre_tag(self.pre_tag) == "b"
 
     @property
     def is_release_candidate(self):
         """A boolean value indicating whether this :class:`Version` instance
         represents a release candidate pre-release.
         """
-        return _normalize_pre_tag(self.pre_tag) == 'rc'
+        return _normalize_pre_tag(self.pre_tag) == "rc"
 
     @property
     def is_postrelease(self):
@@ -571,35 +580,35 @@ class Version:
         d = attr.asdict(self, filter=lambda attr, _: attr.init)
 
         if self.epoch_implicit:
-            d['epoch'] = IMPLICIT_ZERO
+            d["epoch"] = IMPLICIT_ZERO
 
         if self.pre_implicit:
-            d['pre'] = IMPLICIT_ZERO
+            d["pre"] = IMPLICIT_ZERO
 
         if self.post_implicit:
-            d['post'] = IMPLICIT_ZERO
+            d["post"] = IMPLICIT_ZERO
 
         if self.dev_implicit:
-            d['dev'] = IMPLICIT_ZERO
+            d["dev"] = IMPLICIT_ZERO
 
         if self.pre is None:
-            del d['pre']
-            del d['pre_tag']
-            del d['pre_sep1']
-            del d['pre_sep2']
+            del d["pre"]
+            del d["pre_tag"]
+            del d["pre_sep1"]
+            del d["pre_sep2"]
 
         if self.post is None:
-            del d['post']
-            del d['post_tag']
-            del d['post_sep1']
-            del d['post_sep2']
+            del d["post"]
+            del d["post_tag"]
+            del d["post_sep1"]
+            del d["post_sep2"]
         elif self.post_tag is None:
-            del d['post_sep1']
-            del d['post_sep2']
+            del d["post_sep1"]
+            del d["post_sep2"]
 
         if self.dev is None:
-            del d['dev']
-            del d['dev_sep']
+            del d["dev"]
+            del d["dev_sep"]
 
         return d
 
@@ -611,35 +620,35 @@ class Version:
         """
         d = self._attrs_as_init()
 
-        if kwargs.get('post_tag', UNSET) is None:
+        if kwargs.get("post_tag", UNSET) is None:
             # ensure we don't carry over separators for new implicit post
             # release. By popping from d, there will still be an error if the
             # user tries to set them in kwargs
-            d.pop('post_sep1', None)
-            d.pop('post_sep2', None)
+            d.pop("post_sep1", None)
+            d.pop("post_sep2", None)
 
-        if kwargs.get('post', UNSET) is None:
-            kwargs['post_tag'] = UNSET
-            d.pop('post_sep1', None)
-            d.pop('post_sep2', None)
+        if kwargs.get("post", UNSET) is None:
+            kwargs["post_tag"] = UNSET
+            d.pop("post_sep1", None)
+            d.pop("post_sep2", None)
 
-        if kwargs.get('pre', UNSET) is None:
-            kwargs['pre_tag'] = None
-            d.pop('pre_sep1', None)
-            d.pop('pre_sep2', None)
+        if kwargs.get("pre", UNSET) is None:
+            kwargs["pre_tag"] = None
+            d.pop("pre_sep1", None)
+            d.pop("pre_sep2", None)
 
-        if kwargs.get('dev', UNSET) is None:
-            d.pop('dev_sep', None)
+        if kwargs.get("dev", UNSET) is None:
+            d.pop("dev_sep", None)
 
         d.update(kwargs)
         return Version(**d)
 
     def _set_release(self, index, value=None, bump=True):
         if not isinstance(index, int):
-            raise TypeError('index must be an integer')
+            raise TypeError("index must be an integer")
 
         if index < 0:
-            raise ValueError('index cannot be negative')
+            raise ValueError("index cannot be negative")
 
         release = list(self.release)
         new_len = index + 1
@@ -826,14 +835,14 @@ class Version:
 
         if self.pre_tag is None:
             if tag is None:
-                raise ValueError(
-                    "Cannot bump without pre_tag. Use .bump_pre('<tag>')")
+                raise ValueError("Cannot bump without pre_tag. Use .bump_pre('<tag>')")
         else:
             # This is an error because different tags have different meanings
             if tag is not None and self.pre_tag != tag:
                 raise ValueError(
-                    'Cannot bump with pre_tag mismatch ({0} != {1}). Use '
-                    '.replace(pre_tag={1!r})'.format(self.pre_tag, tag))
+                    "Cannot bump with pre_tag mismatch ({0} != {1}). Use "
+                    ".replace(pre_tag={1!r})".format(self.pre_tag, tag)
+                )
             tag = self.pre_tag
 
         return self.replace(pre=pre, pre_tag=tag)
@@ -908,10 +917,10 @@ class Version:
             <Version '1.0'>
         """
         if not isinstance(min_length, int):
-            raise TypeError('min_length must be an integer')
+            raise TypeError("min_length must be an integer")
 
         if min_length < 1:
-            raise ValueError('min_length must be positive')
+            raise ValueError("min_length must be positive")
 
         release = list(self.release)
         if len(release) < min_length:
@@ -921,19 +930,19 @@ class Version:
             last((i for i, n in enumerate(release) if n), default=0),
             min_length - 1,
         )
-        return self.replace(release=release[:last_nonzero + 1])
+        return self.replace(release=release[: last_nonzero + 1])
 
 
 def _normalize_pre_tag(pre_tag):
     if pre_tag is None:
         return None
 
-    if pre_tag == 'alpha':
-        pre_tag = 'a'
-    elif pre_tag == 'beta':
-        pre_tag = 'b'
-    elif pre_tag in {'c', 'pre', 'preview'}:
-        pre_tag = 'rc'
+    if pre_tag == "alpha":
+        pre_tag = "a"
+    elif pre_tag == "beta":
+        pre_tag = "b"
+    elif pre_tag in {"c", "pre", "preview"}:
+        pre_tag = "rc"
 
     return pre_tag
 
@@ -942,7 +951,7 @@ def _normalize_local(local):
     if local is None:
         return None
 
-    return '.'.join(map(str, _parse_local_version(local)))
+    return ".".join(map(str, _parse_local_version(local)))
 
 
 def _cmpkey(epoch, release, pre_tag, pre_num, post, dev, local):
@@ -952,12 +961,14 @@ def _cmpkey(epoch, release, pre_tag, pre_num, post, dev, local):
     # re-reverse it back into the correct order and make it a tuple and use
     # that for our sorting key.
     release = tuple(
-        reversed(list(
-            itertools.dropwhile(
-                lambda x: x == 0,
-                reversed(release),
+        reversed(
+            list(
+                itertools.dropwhile(
+                    lambda x: x == 0,
+                    reversed(release),
+                )
             )
-        ))
+        )
     )
 
     pre = pre_tag, pre_num

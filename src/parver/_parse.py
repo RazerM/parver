@@ -7,7 +7,7 @@ from arpeggio.cleanpeg import ParserPEG
 from . import _segments as segment
 from ._helpers import IMPLICIT_ZERO, UNSET
 
-canonical = r'''
+canonical = r"""
     version = epoch? release pre? post? dev? local? EOF
     epoch = int "!"
     release = int (dot int)*
@@ -23,9 +23,9 @@ canonical = r'''
     dot = "."
     int = r'0|[1-9][0-9]*'
     alpha = r'[0-9]*[a-z][a-z0-9]*'
-'''
+"""
 
-permissive = r'''
+permissive = r"""
     version = v? epoch? release pre? (post / post_implicit)? dev? local? EOF
     v = "v"
     epoch = int "!"
@@ -43,7 +43,7 @@ permissive = r'''
     dot = "."
     int = r'[0-9]+'
     alpha = r'[0-9]*[a-z][a-z0-9]*'
-'''
+"""
 
 _strict_parser = _permissive_parser = None
 _parser_create_lock = Lock()
@@ -58,9 +58,9 @@ def make_token(name):
     return type(name, (Token,), dict())
 
 
-Sep = make_token('Sep')
-Tag = make_token('Tag')
-VToken = make_token('VToken')
+Sep = make_token("Sep")
+Tag = make_token("Tag")
+VToken = make_token("VToken")
 
 
 class VersionVisitor(PTNodeVisitor):
@@ -179,7 +179,7 @@ class VersionVisitor(PTNodeVisitor):
         return segment.Dev(value=num, sep=sep)
 
     def visit_local(self, node, children):
-        return segment.Local(''.join(str(getattr(c, 'value', c)) for c in children))
+        return segment.Local("".join(str(getattr(c, "value", c)) for c in children))
 
     def visit_int(self, node, children):
         return int(node.value)
@@ -203,7 +203,7 @@ def _get_parser(strict):
             with _parser_create_lock:
                 if _strict_parser is None:
                     _strict_parser = ParserPEG(
-                        canonical, root_rule_name='version', skipws=False
+                        canonical, root_rule_name="version", skipws=False
                     )
 
         return _strict_parser
@@ -213,7 +213,7 @@ def _get_parser(strict):
                 if _permissive_parser is None:
                     _permissive_parser = ParserPEG(
                         permissive,
-                        root_rule_name='version',
+                        root_rule_name="version",
                         skipws=False,
                         ignore_case=True,
                     )

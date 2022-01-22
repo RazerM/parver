@@ -14,4 +14,4 @@ precision = 1
 exclude_lines = ["pragma: no cover", "pass"]
 
 [tool.isort]
-multi_line_output = 4
+profile = "black"

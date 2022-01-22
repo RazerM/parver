@@ -20,62 +20,62 @@ import sphinx_rtd_theme
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath("."))
 
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-needs_sphinx = '1.3'
+needs_sphinx = "1.3"
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.doctest',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.viewcode',
+    "sphinx.ext.autodoc",
+    "sphinx.ext.doctest",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.viewcode",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # The suffix of source filenames.
-source_suffix = '.rst'
+source_suffix = ".rst"
 
 # The encoding of source files.
 # source_encoding = 'utf-8-sig'
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 about = dict()
 
 # read _version.py as bytes, otherwise exec will complain about
 # 'coding: utf-8', which we want there for the normal Python 2 import
-with open('../src/parver/_about.py', 'rb') as fp:
+with open("../src/parver/_about.py", "rb") as fp:
     about_mod = fp.read()
 
 exec(about_mod, about)
 
-RELEASE = about['__version__']
-LICENSE = about['__license__']
-DESCRIPTION = about['__description__']
+RELEASE = about["__version__"]
+LICENSE = about["__license__"]
+DESCRIPTION = about["__description__"]
 
-AUTHOR = about['__author__']
+AUTHOR = about["__author__"]
 
-ver_parts = RELEASE.split('.')
+ver_parts = RELEASE.split(".")
 for i, n in enumerate(ver_parts):
     try:
         ver_parts[i] = int(n)
     except ValueError:
         pass
 
-VERSION = '.'.join(str(n) for n in ver_parts if isinstance(n, Number))
+VERSION = ".".join(str(n) for n in ver_parts if isinstance(n, Number))
 
 # General information about the project.
-project = 'parver'
-copyright = f'2018, {AUTHOR}'
+project = "parver"
+copyright = f"2018, {AUTHOR}"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -98,7 +98,7 @@ release = RELEASE
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ["_build"]
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -116,7 +116,7 @@ exclude_patterns = ['_build']
 # show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = "sphinx"
 
 # A list of ignored prefixes for module index sorting.
 # modindex_common_prefix = []
@@ -129,7 +129,7 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'sphinx_rtd_theme'
+html_theme = "sphinx_rtd_theme"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -207,18 +207,16 @@ html_sidebars = {}
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'parverdoc'
+htmlhelp_basename = "parverdoc"
 
 
 # -- Options for LaTeX output ---------------------------------------------
 
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
-    'papersize': 'a4paper',
-
+    "papersize": "a4paper",
     # The font size ('10pt', '11pt' or '12pt').
     # 'pointsize': '10pt',
-
     # Additional stuff for the LaTeX preamble.
     # 'preamble': '',
 }
@@ -227,7 +225,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    ('index', 'parver.tex', 'parver documentation', AUTHOR, 'manual'),
+    ("index", "parver.tex", "parver documentation", AUTHOR, "manual"),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -255,10 +253,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    ('index', 'parver', 'parver documentation',
-     [AUTHOR], 1)
-]
+man_pages = [("index", "parver", "parver documentation", [AUTHOR], 1)]
 
 # If true, show URL addresses after external links.
 # man_show_urls = False
@@ -270,8 +265,15 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'parver', 'parver documentation', AUTHOR, 'parver',
-     DESCRIPTION, 'Miscellaneous'),
+    (
+        "index",
+        "parver",
+        "parver documentation",
+        AUTHOR,
+        "parver",
+        DESCRIPTION,
+        "Miscellaneous",
+    ),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -288,7 +290,7 @@ texinfo_documents = [
 
 # intersphinx
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3', None),
+    "python": ("https://docs.python.org/3", None),
 }
 
-autodoc_member_order = 'bysource'
+autodoc_member_order = "bysource"
