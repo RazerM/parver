@@ -1,4 +1,9 @@
+from typing import Optional, Tuple, Union
+
 import attr
+
+from ._helpers import ImplicitZero, UnsetType
+from ._typing import PostTag, PreTag, Separator
 
 
 @attr.s(slots=True)
@@ -12,39 +17,37 @@ class V(Segment):
 
 
 @attr.s(slots=True)
-class ValueSegment(Segment):
-    value = attr.ib()
+class Epoch:
+    value: int = attr.ib()
 
 
 @attr.s(slots=True)
-class Epoch(ValueSegment):
-    pass
+class Release:
+    value: Tuple[int, ...] = attr.ib()
 
 
 @attr.s(slots=True)
-class Release(ValueSegment):
-    pass
+class Pre:
+    value: Union[ImplicitZero, int] = attr.ib()
+    sep1: Optional[Separator] = attr.ib()
+    tag: PreTag = attr.ib()
+    sep2: Optional[Separator] = attr.ib()
 
 
 @attr.s(slots=True)
-class Pre(ValueSegment):
-    sep1 = attr.ib()
-    tag = attr.ib()
-    sep2 = attr.ib()
+class Post:
+    value: Union[ImplicitZero, int] = attr.ib()
+    sep1: Union[Separator, UnsetType, None] = attr.ib()
+    tag: Optional[PostTag] = attr.ib()
+    sep2: Union[Separator, UnsetType, None] = attr.ib()
 
 
 @attr.s(slots=True)
-class Post(ValueSegment):
-    sep1 = attr.ib()
-    tag = attr.ib()
-    sep2 = attr.ib()
+class Dev:
+    value: Union[ImplicitZero, int] = attr.ib()
+    sep: Optional[Separator] = attr.ib()
 
 
 @attr.s(slots=True)
-class Dev(ValueSegment):
-    sep = attr.ib()
-
-
-@attr.s(slots=True)
-class Local(ValueSegment):
-    pass
+class Local:
+    value: str = attr.ib()

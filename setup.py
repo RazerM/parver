@@ -46,8 +46,10 @@ setup(
     install_requires=[
         "arpeggio ~= 1.7",
         "attrs >= 19.2",
+        "typing-extensions",
     ],
     extras_require=extras_require,
+    include_package_data=True,
     python_requires=">=3.7",
     keywords="pep440 version parse",
     classifiers=[
