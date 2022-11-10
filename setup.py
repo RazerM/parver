@@ -46,7 +46,7 @@ setup(
     install_requires=[
         "arpeggio ~= 1.7",
         "attrs >= 19.2",
-        "typing-extensions",
+        "typing-extensions; python_version<'3.10'",
     ],
     extras_require=extras_require,
     include_package_data=True,

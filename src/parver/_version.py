@@ -21,9 +21,9 @@ from attr import Attribute, converters
 from attr.validators import and_, deep_iterable, in_, instance_of, optional
 
 from . import _segments as segment
-from ._helpers import IMPLICIT_ZERO, UNSET, ImplicitZero, Infinity, UnsetType, last
+from ._helpers import IMPLICIT_ZERO, UNSET, Infinity, UnsetType, last
 from ._parse import parse
-from ._typing import NormalizedPreTag, PostTag, PreTag, Separator
+from ._typing import ImplicitZero, NormalizedPreTag, PostTag, PreTag, Separator
 
 POST_TAGS: Set[PostTag] = {"post", "rev", "r"}
 SEPS: Set[Separator] = {".", "-", "_"}
@@ -133,56 +133,42 @@ class Version:
     """
 
     :param release: Numbers for the release segment.
-    :type release: int or tuple[int]
 
     :param v: Optional preceding v character.
-    :type v: bool
 
     :param epoch: `Version epoch`_. Implicitly zero but hidden by default.
-    :type epoch: int
 
     :param pre_tag: `Pre-release`_ identifier, typically `a`, `b`, or `rc`.
         Required to signify a pre-release.
-    :type pre_tag: str
 
     :param pre: `Pre-release`_ number. May be ``''`` to signify an
         `implicit pre-release number`_.
-    :type pre: int
 
     :param post: `Post-release`_ number. May be ``''`` to signify an
         `implicit post release number`_.
-    :type post: int
 
     :param dev: `Developmental release`_ number. May be ``''`` to signify an
         `implicit development release number`_.
-    :type dev: int
 
     :param local: `Local version`_ segment.
-    :type local:
 
     :param pre_sep1: Specify an alternate separator before the pre-release
         segment. The normal form is `None`.
-    :type pre_sep1: str
 
     :param pre_sep2: Specify an alternate separator between the identifier and
         number. The normal form is ``'.'``.
-    :type pre_sep2: str
 
     :param post_sep1: Specify an alternate separator before the post release
         segment. The normal form is ``'.'``.
-    :type post_sep1: str
 
     :param post_sep2: Specify an alternate separator between the identifier and
         number. The normal form is ``'.'``.
-    :type post_sep2: str
 
     :param dev_sep: Specify an alternate separator before the development
         release segment. The normal form is ``'.'``.
-    :type dev_sep: str
 
     :param post_tag: Specify alternate post release identifier `rev` or `r`.
         May be `None` to signify an `implicit post release`_.
-    :type post_tag: str
 
     .. note:: The attributes below are not equal to the parameters passed to
         the initialiser!
@@ -473,7 +459,7 @@ class Version:
         """
         segments = parse(version, strict=strict)
 
-        kwargs = dict()
+        kwargs: Dict[str, Any] = dict()
 
         for s in segments:
             if isinstance(s, segment.Epoch):
@@ -500,7 +486,7 @@ class Version:
             else:
                 raise TypeError(f"Unexpected segment: {segment}")
 
-        return cls(**kwargs)  # type: ignore[arg-type]
+        return cls(**kwargs)
 
     def normalize(self) -> "Version":
         return Version(

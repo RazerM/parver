@@ -1,19 +1,23 @@
+import sys
 from typing import Union
 
-from typing_extensions import Literal
+from arpeggio import NonTerminal, Terminal
 
-PreTag = Union[
-    Literal["c"],
-    Literal["rc"],
-    Literal["alpha"],
-    Literal["a"],
-    Literal["beta"],
-    Literal["b"],
-    Literal["preview"],
-    Literal["pre"],
-]
-NormalizedPreTag = Union[Literal["a"], Literal["b"], Literal["rc"]]
+if sys.version_info >= (3, 8):
+    from typing import Literal
+else:
+    from typing_extensions import Literal
 
-Separator = Union[Literal["."], Literal["-"], Literal["_"]]
+if sys.version_info >= (3, 10):
+    from typing import TypeAlias
+else:
+    from typing_extensions import TypeAlias
 
-PostTag = Union[Literal["post"], Literal["rev"], Literal["r"]]
+PreTag: TypeAlias = Literal["c", "rc", "alpha", "a", "beta", "b", "preview", "pre"]
+NormalizedPreTag: TypeAlias = Literal["a", "b", "rc"]
+Separator: TypeAlias = Literal[".", "-", "_"]
+PostTag: TypeAlias = Literal["post", "rev", "r"]
+
+ImplicitZero: TypeAlias = Literal[""]
+
+Node: TypeAlias = Union[Terminal, NonTerminal]

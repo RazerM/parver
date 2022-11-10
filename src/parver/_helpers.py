@@ -1,7 +1,7 @@
 from collections import deque
 from typing import Any, Dict, Iterable, TypeVar, Union, cast, overload
 
-from typing_extensions import Literal
+from ._typing import ImplicitZero
 
 T = TypeVar("T")
 R = TypeVar("R")
@@ -112,5 +112,4 @@ def last(iterable: Iterable[T], *, default: Union[UnsetType, T] = UNSET) -> T:
         return cast(T, default)
 
 
-ImplicitZero = Literal[""]
 IMPLICIT_ZERO: ImplicitZero = ""

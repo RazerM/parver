@@ -2,8 +2,8 @@ from typing import Optional, Tuple, Union
 
 import attr
 
-from ._helpers import ImplicitZero, UnsetType
-from ._typing import PostTag, PreTag, Separator
+from ._helpers import UnsetType
+from ._typing import ImplicitZero, PostTag, PreTag, Separator
 
 
 @attr.s(slots=True)

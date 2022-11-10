@@ -4,7 +4,6 @@ from typing import List, Optional, Tuple, Union, cast
 import attr
 from arpeggio import (
     NoMatch,
-    NonTerminal,
     PTNodeVisitor,
     SemanticActionResults,
     Terminal,
@@ -13,10 +12,8 @@ from arpeggio import (
 from arpeggio.cleanpeg import ParserPEG
 
 from . import _segments as segment
-from ._helpers import IMPLICIT_ZERO, UNSET, ImplicitZero, UnsetType
-from ._typing import PostTag, PreTag, Separator
-
-Node = Union[Terminal, NonTerminal]
+from ._helpers import IMPLICIT_ZERO, UNSET, UnsetType
+from ._typing import ImplicitZero, Node, PostTag, PreTag, Separator
 
 canonical = r"""
     version = epoch? release pre? post? dev? local? EOF
