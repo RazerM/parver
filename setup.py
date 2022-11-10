@@ -20,7 +20,7 @@ extras_require = {
     "docstest": [
         "doc8",
         "sphinx",
-        "sphinx_rtd_theme",
+        "furo",
     ],
     "pep8test": [
         "flake8",
