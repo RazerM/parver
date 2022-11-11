@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "parver"
-version = "0.3.1"
+version = "0.4"
 description = "Parse and manipulate version numbers."
 readme = "README.rst"
 requires-python = ">=3.7"

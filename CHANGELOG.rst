@@ -3,10 +3,19 @@ Changelog
 
 .. _unreleasedunreleased:
 
-Unreleased
-----------
+0.4 (2022-11-11)
+----------------
 
-N/A
+Added
+~~~~~
+
+- Type hints.
+
+Removed
+~~~~~~~
+
+- Support for Python 2.7, 3.5, and 3.6.
+- ``__version__``, ``__author__``, and ``__email__`` attributes from `parver` module. Use :mod:`importlib.metadata` instead.
 
 
 0.3.1 (2020-09-28)
