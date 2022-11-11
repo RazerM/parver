@@ -1,4 +1,3 @@
-from ._about import __author__, __email__, __version__  # noqa
 from ._parse import ParseError
 from ._version import Version
 
