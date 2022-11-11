@@ -17,10 +17,12 @@ extras_require = {
         "hypothesis",
         "pretend",
     ],
-    "docstest": [
-        "doc8",
+    "docs": [
         "sphinx",
         "furo",
+    ],
+    "docstest": [
+        "doc8",
     ],
     "pep8test": [
         "flake8",
