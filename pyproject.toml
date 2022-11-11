@@ -1,6 +1,46 @@
 [build-system]
-requires = ["setuptools>=40.6.0", "wheel"]
+requires = ["setuptools>=64", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "parver"
+version = "0.3.1"
+description = "Parse and manipulate version numbers."
+readme = "README.rst"
+requires-python = ">=3.7"
+license = { text = "MIT" }
+authors = [
+    { name = "Frazer McLean", email = "frazer@frazermclean.co.uk" },
+]
+keywords = ["pep440", "version", "parse"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = [
+    "arpeggio>=1.7",
+    "attrs >= 19.2",
+    "typing-extensions; python_version<'3.10'",
+]
+
+[project.optional-dependencies]
+test = ["pytest", "hypothesis", "pretend"]
+docs = ["sphinx", "furo"]
+docstest = ["doc8"]
+pep8test = ["flake8", "pep8-naming"]
+
+[project.urls]
+Documentation = "https://parver.readthedocs.io"
+"Source Code" = "https://github.com/RazerM/parver"
 
 [tool.coverage.run]
 branch = true
