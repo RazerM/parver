@@ -1,17 +1,21 @@
-# coding: utf-8
-from __future__ import absolute_import, division, print_function
-
 from threading import Lock
+from typing import List, Optional, Tuple, Union, cast
 
 import attr
-import six
-from arpeggio import NoMatch, PTNodeVisitor, Terminal, visit_parse_tree
+from arpeggio import (
+    NoMatch,
+    PTNodeVisitor,
+    SemanticActionResults,
+    Terminal,
+    visit_parse_tree,
+)
 from arpeggio.cleanpeg import ParserPEG
 
 from . import _segments as segment
-from ._helpers import IMPLICIT_ZERO, UNSET
+from ._helpers import IMPLICIT_ZERO, UNSET, UnsetType
+from ._typing import ImplicitZero, Node, PostTag, PreTag, Separator
 
-canonical = r'''
+canonical = r"""
     version = epoch? release pre? post? dev? local? EOF
     epoch = int "!"
     release = int (dot int)*
@@ -27,9 +31,9 @@ canonical = r'''
     dot = "."
     int = r'0|[1-9][0-9]*'
     alpha = r'[0-9]*[a-z][a-z0-9]*'
-'''
+"""
 
-permissive = r'''
+permissive = r"""
     version = v? epoch? release pre? (post / post_implicit)? dev? local? EOF
     v = "v"
     epoch = int "!"
@@ -47,44 +51,44 @@ permissive = r'''
     dot = "."
     int = r'[0-9]+'
     alpha = r'[0-9]*[a-z][a-z0-9]*'
-'''
+"""
 
 _strict_parser = _permissive_parser = None
 _parser_create_lock = Lock()
 
 
-@attr.s
-class Token(object):
-    value = attr.ib()
+@attr.s(slots=True)
+class Sep:
+    value: Optional[Separator] = attr.ib()
 
 
-def make_token(name):
-    return type(name, (Token,), dict())
+@attr.s(slots=True)
+class Tag:
+    value: Union[PreTag, PostTag] = attr.ib()
 
 
-Sep = make_token('Sep')
-Tag = make_token('Tag')
-VToken = make_token('VToken')
+class VersionVisitor(PTNodeVisitor):  # type: ignore[misc]
+    def visit_version(
+        self, node: Node, children: SemanticActionResults
+    ) -> List[segment.Segment]:
+        return list(children)
 
-
-class VersionVisitor(PTNodeVisitor):
-    def visit_version(self, node, children):
-        return children
-
-    def visit_v(self, node, children):
+    def visit_v(self, node: Node, children: SemanticActionResults) -> segment.V:
         return segment.V()
 
-    def visit_epoch(self, node, children):
+    def visit_epoch(self, node: Node, children: SemanticActionResults) -> segment.Epoch:
         return segment.Epoch(children[0])
 
-    def visit_release(self, node, children):
+    def visit_release(
+        self, node: Node, children: SemanticActionResults
+    ) -> segment.Release:
         return segment.Release(tuple(children))
 
-    def visit_pre(self, node, children):
-        sep1 = UNSET
-        tag = UNSET
-        sep2 = UNSET
-        num = UNSET
+    def visit_pre(self, node: Node, children: SemanticActionResults) -> segment.Pre:
+        sep1: Union[Separator, None, UnsetType] = UNSET
+        tag: Union[PreTag, UnsetType] = UNSET
+        sep2: Union[Separator, None, UnsetType] = UNSET
+        num: Union[ImplicitZero, int, UnsetType] = UNSET
 
         for token in children:
             if sep1 is UNSET:
@@ -92,7 +96,7 @@ class VersionVisitor(PTNodeVisitor):
                     sep1 = token.value
                 elif isinstance(token, Tag):
                     sep1 = None
-                    tag = token.value
+                    tag = cast(PreTag, token.value)
             elif tag is UNSET:
                 tag = token.value
             else:
@@ -105,14 +109,16 @@ class VersionVisitor(PTNodeVisitor):
             sep2 = None
             num = IMPLICIT_ZERO
 
-        assert sep1 is not UNSET
-        assert tag is not UNSET
-        assert sep2 is not UNSET
-        assert num is not UNSET
+        assert not isinstance(sep1, UnsetType)
+        assert not isinstance(tag, UnsetType)
+        assert not isinstance(sep2, UnsetType)
+        assert not isinstance(num, UnsetType)
 
         return segment.Pre(sep1=sep1, tag=tag, sep2=sep2, value=num)
 
-    def visit_pre_post_num(self, node, children):
+    def visit_pre_post_num(
+        self, node: Node, children: SemanticActionResults
+    ) -> Tuple[Sep, int]:
         # when "pre_post_num = int", visit_int isn't called for some reason
         # I don't understand. Let's call int() manually
         if isinstance(node, Terminal):
@@ -121,16 +127,16 @@ class VersionVisitor(PTNodeVisitor):
         if len(children) == 1:
             return Sep(None), children[0]
         else:
-            return tuple(children[:2])
+            return cast("Tuple[Sep, int]", tuple(children[:2]))
 
-    def visit_pre_tag(self, node, children):
+    def visit_pre_tag(self, node: Node, children: SemanticActionResults) -> Tag:
         return Tag(node.value)
 
-    def visit_post(self, node, children):
-        sep1 = UNSET
-        tag = UNSET
-        sep2 = UNSET
-        num = UNSET
+    def visit_post(self, node: Node, children: SemanticActionResults) -> segment.Post:
+        sep1: Union[Separator, None, UnsetType] = UNSET
+        tag: Union[PostTag, None, UnsetType] = UNSET
+        sep2: Union[Separator, None, UnsetType] = UNSET
+        num: Union[ImplicitZero, int, UnsetType] = UNSET
 
         for token in children:
             if sep1 is UNSET:
@@ -138,7 +144,7 @@ class VersionVisitor(PTNodeVisitor):
                     sep1 = token.value
                 elif isinstance(token, Tag):
                     sep1 = None
-                    tag = token.value
+                    tag = cast(PostTag, token.value)
             elif tag is UNSET:
                 tag = token.value
             else:
@@ -151,22 +157,24 @@ class VersionVisitor(PTNodeVisitor):
             sep2 = None
             num = IMPLICIT_ZERO
 
-        assert sep1 is not UNSET
-        assert tag is not UNSET
-        assert sep2 is not UNSET
-        assert num is not UNSET
+        assert not isinstance(sep1, UnsetType)
+        assert not isinstance(tag, UnsetType)
+        assert not isinstance(sep2, UnsetType)
+        assert not isinstance(num, UnsetType)
 
         return segment.Post(sep1=sep1, tag=tag, sep2=sep2, value=num)
 
-    def visit_post_tag(self, node, children):
+    def visit_post_tag(self, node: Node, children: SemanticActionResults) -> Tag:
         return Tag(node.value)
 
-    def visit_post_implicit(self, node, children):
+    def visit_post_implicit(
+        self, node: Node, children: SemanticActionResults
+    ) -> segment.Post:
         return segment.Post(sep1=UNSET, tag=None, sep2=UNSET, value=children[0])
 
-    def visit_dev(self, node, children):
-        num = IMPLICIT_ZERO
-        sep = UNSET
+    def visit_dev(self, node: Node, children: SemanticActionResults) -> segment.Dev:
+        num: Union[ImplicitZero, int] = IMPLICIT_ZERO
+        sep: Union[Separator, None, UnsetType] = UNSET
 
         for token in children:
             if sep is UNSET:
@@ -177,18 +185,18 @@ class VersionVisitor(PTNodeVisitor):
             else:
                 num = token
 
-        if sep is UNSET:
+        if isinstance(sep, UnsetType):
             sep = None
 
         return segment.Dev(value=num, sep=sep)
 
-    def visit_local(self, node, children):
-        return segment.Local(''.join(str(getattr(c, 'value', c)) for c in children))
+    def visit_local(self, node: Node, children: SemanticActionResults) -> segment.Local:
+        return segment.Local("".join(str(getattr(c, "value", c)) for c in children))
 
-    def visit_int(self, node, children):
+    def visit_int(self, node: Node, children: SemanticActionResults) -> int:
         return int(node.value)
 
-    def visit_sep(self, node, children):
+    def visit_sep(self, node: Node, children: SemanticActionResults) -> Sep:
         return Sep(node.value)
 
 
@@ -196,7 +204,7 @@ class ParseError(ValueError):
     """Raised when parsing an invalid version number."""
 
 
-def _get_parser(strict):
+def _get_parser(strict: bool) -> ParserPEG:
     """Ensure the module-level peg parser is created and return it."""
     global _strict_parser, _permissive_parser
 
@@ -207,7 +215,7 @@ def _get_parser(strict):
             with _parser_create_lock:
                 if _strict_parser is None:
                     _strict_parser = ParserPEG(
-                        canonical, root_rule_name='version', skipws=False
+                        canonical, root_rule_name="version", skipws=False
                     )
 
         return _strict_parser
@@ -217,7 +225,7 @@ def _get_parser(strict):
                 if _permissive_parser is None:
                     _permissive_parser = ParserPEG(
                         permissive,
-                        root_rule_name='version',
+                        root_rule_name="version",
                         skipws=False,
                         ignore_case=True,
                     )
@@ -225,12 +233,12 @@ def _get_parser(strict):
         return _permissive_parser
 
 
-def parse(version, strict=False):
+def parse(version: str, strict: bool = False) -> List[segment.Segment]:
     parser = _get_parser(strict)
 
     try:
         tree = parser.parse(version.strip())
     except NoMatch as exc:
-        six.raise_from(ParseError(str(exc)), None)
+        raise ParseError(str(exc)) from None
 
-    return visit_parse_tree(tree, VersionVisitor())
+    return cast("List[segment.Segment]", visit_parse_tree(tree, VersionVisitor()))

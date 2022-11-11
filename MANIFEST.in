@@ -5,3 +5,4 @@ include tox.ini
 recursive-include tests *.py
 recursive-include docs *
 prune docs/_build
+include src/parver/py.typed

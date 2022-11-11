@@ -1,171 +1,174 @@
-# coding: utf-8
-from __future__ import absolute_import, division, print_function
-
-import copy
 import itertools
 import operator
 import re
 from functools import partial
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    Union,
+    cast,
+    overload,
+)
 
 import attr
-import six
-from six.moves.collections_abc import Sequence
-from attr.validators import and_, in_, instance_of, optional
+from attr import Attribute, converters
+from attr.validators import and_, deep_iterable, in_, instance_of, optional
 
 from . import _segments as segment
-from ._helpers import (
-    IMPLICIT_ZERO, UNSET, Infinity, doc_signature, force_lower, force_tuple,
-    kwonly_args, last)
+from ._helpers import IMPLICIT_ZERO, UNSET, Infinity, UnsetType, last
 from ._parse import parse
+from ._typing import ImplicitZero, NormalizedPreTag, PostTag, PreTag, Separator
 
-POST_TAGS = {'post', 'rev', 'r'}
-SEPS = {'.', '-', '_'}
-PRE_TAGS = {'c', 'rc', 'alpha', 'a', 'beta', 'b', 'preview', 'pre'}
+POST_TAGS: Set[PostTag] = {"post", "rev", "r"}
+SEPS: Set[Separator] = {".", "-", "_"}
+PRE_TAGS: Set[PreTag] = {"c", "rc", "alpha", "a", "beta", "b", "preview", "pre"}
+
+_ValidatorType = Callable[[Any, "Attribute[Any]", Any], None]
 
 
-def unset_or(validator):
-    def validate(inst, attr, value):
+def unset_or(validator: _ValidatorType) -> _ValidatorType:
+    def validate(inst: Any, attr: "Attribute[Any]", value: Any) -> None:
         if value is UNSET:
             return
 
         validator(inst, attr, value)
+
     return validate
 
 
-def implicit_or(validator):
-    if isinstance(validator, list):
+def implicit_or(
+    validator: Union[_ValidatorType, Sequence[_ValidatorType]]
+) -> _ValidatorType:
+    if isinstance(validator, Sequence):
         validator = and_(*validator)
 
-    def validate(inst, attr, value):
+    def validate(inst: Any, attr: "Attribute[Any]", value: Any) -> None:
         if value == IMPLICIT_ZERO:
             return
 
-        validator(inst, attr, value)
+        validator(inst, attr, value)  # type: ignore[operator]
+
     return validate
 
 
-def not_bool(inst, attr, value):
+def not_bool(inst: Any, attr: "Attribute[Any]", value: Any) -> None:
     if isinstance(value, bool):
         raise TypeError(
-            "'{name}' must not be a bool (got {value!r})"
-            .format(name=attr.name, value=value)
+            "'{name}' must not be a bool (got {value!r})".format(
+                name=attr.name, value=value
+            )
         )
 
 
-def is_non_negative(inst, attr, value):
+def is_non_negative(inst: Any, attr: "Attribute[Any]", value: Any) -> None:
     if value < 0:
         raise ValueError(
-            "'{name}' must be non-negative (got {value!r})"
-            .format(name=attr.name, value=value)
+            "'{name}' must be non-negative (got {value!r})".format(
+                name=attr.name, value=value
+            )
         )
 
 
-def check_by(by, current):
+def non_empty(inst: Any, attr: "Attribute[Any]", value: Any) -> None:
+    if not value:
+        raise ValueError(f"'{attr.name}' cannot be empty")
+
+
+def check_by(by: int, current: Optional[int]) -> None:
     if not isinstance(by, int):
-        raise TypeError('by must be an integer')
+        raise TypeError("by must be an integer")
 
     if current is None and by < 0:
-        raise ValueError('Cannot bump by negative amount when current value is unset.')
+        raise ValueError("Cannot bump by negative amount when current value is unset.")
 
 
-validate_post_tag = unset_or(optional(in_(POST_TAGS)))
-validate_pre_tag = optional(in_(PRE_TAGS))
-validate_sep = optional(in_(SEPS))
-validate_sep_or_unset = unset_or(optional(in_(SEPS)))
-is_bool = instance_of(bool)
-is_int = instance_of(six.integer_types)
-is_str = instance_of(six.string_types)
-is_seq = instance_of(Sequence)
+validate_post_tag: _ValidatorType = unset_or(optional(in_(POST_TAGS)))
+validate_pre_tag: _ValidatorType = optional(in_(PRE_TAGS))
+validate_sep: _ValidatorType = optional(in_(SEPS))
+validate_sep_or_unset: _ValidatorType = unset_or(optional(in_(SEPS)))
+is_bool: _ValidatorType = instance_of(bool)
+is_int: _ValidatorType = instance_of(int)
+is_str: _ValidatorType = instance_of(str)
+is_tuple: _ValidatorType = instance_of(tuple)
 
 # "All numeric components MUST be non-negative integers."
 num_comp = [not_bool, is_int, is_non_negative]
 
+release_validator = deep_iterable(and_(*num_comp), and_(is_tuple, non_empty))
 
-def sequence_of(validator, allow_empty=False):
-    if isinstance(validator, list):
-        validator = and_(*validator)
 
-    def validate(inst, attr, value):
-        is_seq(inst, attr, value)
+def convert_release(release: Union[int, Iterable[int]]) -> Tuple[int, ...]:
+    if isinstance(release, Iterable) and not isinstance(release, str):
+        return tuple(release)
+    elif isinstance(release, int):
+        return (release,)
 
-        if not allow_empty and not value:
-            raise ValueError("'{name}' cannot be empty".format(name=attr.name))
+    # The input value does not conform to the function type, let it pass through
+    # to the validator
+    return release
 
-        for i, item in enumerate(value):
-            try:
-                validator(inst, attr, item)
-            except (ValueError, TypeError):
-                # now that we know it's invalid, let's re-do the validation
-                # with a better attribute name. Since we have to copy data,
-                # we only do it when we know we have to raise an exception.
-                item_attr = copy.copy(attr)
-                object.__setattr__(item_attr, 'name', '{}[{}]'.format(attr.name, i))
-                try:
-                    validator(inst, item_attr, item)
-                except Exception as exc:
-                    six.raise_from(exc, None)
-                else:
-                    # if we somehow got here, raise original exception
-                    raise
 
-    return validate
+def convert_local(local: Optional[str]) -> Optional[str]:
+    if isinstance(local, str):
+        return local.lower()
+    return local
+
+
+def convert_implicit(value: Union[ImplicitZero, int]) -> int:
+    """This function is a lie, since mypy's attrs plugin takes the argument type
+    as that of the constructed __init__. The lie is required because we aren't
+    dealing with ImplicitZero until __attrs_post_init__.
+    """
+    return value  # type: ignore[return-value]
 
 
 @attr.s(frozen=True, repr=False, eq=False)
-class Version(object):
+class Version:
     """
 
     :param release: Numbers for the release segment.
-    :type release: int or tuple[int]
 
     :param v: Optional preceding v character.
-    :type v: bool
 
     :param epoch: `Version epoch`_. Implicitly zero but hidden by default.
-    :type epoch: int
 
     :param pre_tag: `Pre-release`_ identifier, typically `a`, `b`, or `rc`.
         Required to signify a pre-release.
-    :type pre_tag: str
 
     :param pre: `Pre-release`_ number. May be ``''`` to signify an
         `implicit pre-release number`_.
-    :type pre: int
 
     :param post: `Post-release`_ number. May be ``''`` to signify an
         `implicit post release number`_.
-    :type post: int
 
     :param dev: `Developmental release`_ number. May be ``''`` to signify an
         `implicit development release number`_.
-    :type dev: int
 
     :param local: `Local version`_ segment.
-    :type local:
 
     :param pre_sep1: Specify an alternate separator before the pre-release
         segment. The normal form is `None`.
-    :type pre_sep1: str
 
     :param pre_sep2: Specify an alternate separator between the identifier and
         number. The normal form is ``'.'``.
-    :type pre_sep2: str
 
     :param post_sep1: Specify an alternate separator before the post release
         segment. The normal form is ``'.'``.
-    :type post_sep1: str
 
     :param post_sep2: Specify an alternate separator between the identifier and
         number. The normal form is ``'.'``.
-    :type post_sep2: str
 
     :param dev_sep: Specify an alternate separator before the development
         release segment. The normal form is ``'.'``.
-    :type dev_sep: str
 
     :param post_tag: Specify alternate post release identifier `rev` or `r`.
         May be `None` to signify an `implicit post release`_.
-    :type post_tag: str
 
     .. note:: The attributes below are not equal to the parameters passed to
         the initialiser!
@@ -278,64 +281,94 @@ class Version(object):
         #implicit-post-releases
 
     """
-    release = attr.ib(converter=force_tuple, validator=sequence_of(num_comp))
-    v = attr.ib(default=False, validator=is_bool)
-    epoch = attr.ib(default=IMPLICIT_ZERO, validator=implicit_or(num_comp))
-    pre_tag = attr.ib(default=None, validator=validate_pre_tag)
-    pre = attr.ib(default=None, validator=implicit_or(optional(num_comp)))
-    post = attr.ib(default=None, validator=implicit_or(optional(num_comp)))
-    dev = attr.ib(default=None, validator=implicit_or(optional(num_comp)))
-    local = attr.ib(default=None, converter=force_lower, validator=optional(is_str))
 
-    pre_sep1 = attr.ib(default=None, validator=validate_sep)
-    pre_sep2 = attr.ib(default=None, validator=validate_sep)
-    post_sep1 = attr.ib(default=UNSET, validator=validate_sep_or_unset)
-    post_sep2 = attr.ib(default=UNSET, validator=validate_sep_or_unset)
-    dev_sep = attr.ib(default=UNSET, validator=validate_sep_or_unset)
-    post_tag = attr.ib(default=UNSET, validator=validate_post_tag)
+    release: Tuple[int, ...] = attr.ib(
+        converter=convert_release, validator=release_validator
+    )
+    v: bool = attr.ib(default=False, validator=is_bool)
+    epoch: int = attr.ib(
+        default=cast(int, IMPLICIT_ZERO),
+        converter=convert_implicit,
+        validator=implicit_or(num_comp),
+    )
+    pre_tag: Optional[PreTag] = attr.ib(default=None, validator=validate_pre_tag)
+    pre: Optional[int] = attr.ib(
+        default=None,
+        converter=converters.optional(convert_implicit),
+        validator=implicit_or(optional(num_comp)),
+    )
+    post: Optional[int] = attr.ib(
+        default=None,
+        converter=converters.optional(convert_implicit),
+        validator=implicit_or(optional(num_comp)),
+    )
+    dev: Optional[int] = attr.ib(
+        default=None,
+        converter=converters.optional(convert_implicit),
+        validator=implicit_or(optional(num_comp)),
+    )
+    local: Optional[str] = attr.ib(
+        default=None, converter=convert_local, validator=optional(is_str)
+    )
 
-    epoch_implicit = attr.ib(default=False, init=False)
-    pre_implicit = attr.ib(default=False, init=False)
-    post_implicit = attr.ib(default=False, init=False)
-    dev_implicit = attr.ib(default=False, init=False)
+    pre_sep1: Optional[Separator] = attr.ib(default=None, validator=validate_sep)
+    pre_sep2: Optional[Separator] = attr.ib(default=None, validator=validate_sep)
+    post_sep1: Optional[Separator] = attr.ib(
+        default=UNSET, validator=validate_sep_or_unset
+    )
+    post_sep2: Optional[Separator] = attr.ib(
+        default=UNSET, validator=validate_sep_or_unset
+    )
+    dev_sep: Optional[Separator] = attr.ib(
+        default=UNSET, validator=validate_sep_or_unset
+    )
+    post_tag: Optional[PostTag] = attr.ib(default=UNSET, validator=validate_post_tag)
+
+    epoch_implicit: bool = attr.ib(default=False, init=False)
+    pre_implicit: bool = attr.ib(default=False, init=False)
+    post_implicit: bool = attr.ib(default=False, init=False)
+    dev_implicit: bool = attr.ib(default=False, init=False)
     _key = attr.ib(init=False)
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         set_ = partial(object.__setattr__, self)
 
         if self.epoch == IMPLICIT_ZERO:
-            set_('epoch', 0)
-            set_('epoch_implicit', True)
+            set_("epoch", 0)
+            set_("epoch_implicit", True)
 
         self._validate_pre(set_)
         self._validate_post(set_)
         self._validate_dev(set_)
 
-        set_('_key', _cmpkey(
-            self.epoch,
-            self.release,
-            _normalize_pre_tag(self.pre_tag),
-            self.pre,
-            self.post,
-            self.dev,
-            self.local,
-        ))
+        set_(
+            "_key",
+            _cmpkey(
+                self.epoch,
+                self.release,
+                _normalize_pre_tag(self.pre_tag),
+                self.pre,
+                self.post,
+                self.dev,
+                self.local,
+            ),
+        )
 
-    def _validate_pre(self, set_):
+    def _validate_pre(self, set_: Callable[[str, Any], None]) -> None:
         if self.pre_tag is None:
             if self.pre is not None:
-                raise ValueError('Must set pre_tag if pre is given.')
+                raise ValueError("Must set pre_tag if pre is given.")
 
             if self.pre_sep1 is not None or self.pre_sep2 is not None:
-                raise ValueError('Cannot set pre_sep1 or pre_sep2 without pre_tag.')
+                raise ValueError("Cannot set pre_sep1 or pre_sep2 without pre_tag.")
         else:
             if self.pre == IMPLICIT_ZERO:
-                set_('pre', 0)
-                set_('pre_implicit', True)
+                set_("pre", 0)
+                set_("pre_implicit", True)
             elif self.pre is None:
-                raise ValueError('Must set pre if pre_tag is given.')
+                raise ValueError("Must set pre if pre_tag is given.")
 
-    def _validate_post(self, set_):
+    def _validate_post(self, set_: Callable[[str, Any], None]) -> None:
         got_post_tag = self.post_tag is not UNSET
         got_post = self.post is not None
         got_post_sep1 = self.post_sep1 is not UNSET
@@ -343,15 +376,15 @@ class Version(object):
 
         # post_tag relies on post
         if got_post_tag and not got_post:
-            raise ValueError('Must set post if post_tag is given.')
+            raise ValueError("Must set post if post_tag is given.")
 
         if got_post:
             if not got_post_tag:
                 # user gets the default for post_tag
-                set_('post_tag', 'post')
+                set_("post_tag", "post")
             if self.post == IMPLICIT_ZERO:
-                set_('post_implicit', True)
-                set_('post', 0)
+                set_("post_implicit", True)
+                set_("post", 0)
 
         # Validate parameters for implicit post-release (post_tag=None).
         # An implicit post-release is e.g. '1-2' (== '1.post2')
@@ -359,47 +392,49 @@ class Version(object):
             if self.post_implicit:
                 raise ValueError(
                     "Implicit post releases (post_tag=None) require a numerical "
-                    "value for 'post' argument.")
+                    "value for 'post' argument."
+                )
 
             if got_post_sep1 or got_post_sep2:
                 raise ValueError(
-                    'post_sep1 and post_sep2 cannot be set for implicit post '
-                    'releases (post_tag=None)')
+                    "post_sep1 and post_sep2 cannot be set for implicit post "
+                    "releases (post_tag=None)"
+                )
 
             if self.pre_implicit:
                 raise ValueError(
-                    'post_tag cannot be None with an implicit pre-release '
-                    "(pre='').")
+                    "post_tag cannot be None with an implicit pre-release " "(pre='')."
+                )
 
-            set_('post_sep1', '-')
+            set_("post_sep1", "-")
         elif self.post_tag is UNSET:
             if got_post_sep1 or got_post_sep2:
-                raise ValueError('Cannot set post_sep1 or post_sep2 without post_tag.')
+                raise ValueError("Cannot set post_sep1 or post_sep2 without post_tag.")
 
-            set_('post_tag', None)
+            set_("post_tag", None)
 
         if not got_post_sep1 and self.post_sep1 is UNSET:
-            set_('post_sep1', None if self.post is None else '.')
+            set_("post_sep1", None if self.post is None else ".")
 
         if not got_post_sep2:
-            set_('post_sep2', None)
+            set_("post_sep2", None)
 
         assert self.post_sep1 is not UNSET
         assert self.post_sep2 is not UNSET
 
-    def _validate_dev(self, set_):
+    def _validate_dev(self, set_: Callable[[str, Any], None]) -> None:
         if self.dev == IMPLICIT_ZERO:
-            set_('dev_implicit', True)
-            set_('dev', 0)
+            set_("dev_implicit", True)
+            set_("dev", 0)
         elif self.dev is None:
             if self.dev_sep is not UNSET:
-                raise ValueError('Cannot set dev_sep without dev.')
+                raise ValueError("Cannot set dev_sep without dev.")
 
         if self.dev_sep is UNSET:
-            set_('dev_sep', None if self.dev is None else '.')
+            set_("dev_sep", None if self.dev is None else ".")
 
     @classmethod
-    def parse(cls, version, strict=False):
+    def parse(cls, version: str, strict: bool = False) -> "Version":
         """
         :param version: Version number as defined in `PEP 440`_.
         :type version: str
@@ -424,36 +459,36 @@ class Version(object):
         """
         segments = parse(version, strict=strict)
 
-        kwargs = dict()
+        kwargs: Dict[str, Any] = dict()
 
         for s in segments:
             if isinstance(s, segment.Epoch):
-                kwargs['epoch'] = s.value
+                kwargs["epoch"] = s.value
             elif isinstance(s, segment.Release):
-                kwargs['release'] = s.value
+                kwargs["release"] = s.value
             elif isinstance(s, segment.Pre):
-                kwargs['pre'] = s.value
-                kwargs['pre_tag'] = s.tag
-                kwargs['pre_sep1'] = s.sep1
-                kwargs['pre_sep2'] = s.sep2
+                kwargs["pre"] = s.value
+                kwargs["pre_tag"] = s.tag
+                kwargs["pre_sep1"] = s.sep1
+                kwargs["pre_sep2"] = s.sep2
             elif isinstance(s, segment.Post):
-                kwargs['post'] = s.value
-                kwargs['post_tag'] = s.tag
-                kwargs['post_sep1'] = s.sep1
-                kwargs['post_sep2'] = s.sep2
+                kwargs["post"] = s.value
+                kwargs["post_tag"] = s.tag
+                kwargs["post_sep1"] = s.sep1
+                kwargs["post_sep2"] = s.sep2
             elif isinstance(s, segment.Dev):
-                kwargs['dev'] = s.value
-                kwargs['dev_sep'] = s.sep
+                kwargs["dev"] = s.value
+                kwargs["dev_sep"] = s.sep
             elif isinstance(s, segment.Local):
-                kwargs['local'] = s.value
+                kwargs["local"] = s.value
             elif isinstance(s, segment.V):
-                kwargs['v'] = True
+                kwargs["v"] = True
             else:
-                raise TypeError('Unexpected segment: {}'.format(segment))
+                raise TypeError(f"Unexpected segment: {segment}")
 
         return cls(**kwargs)
 
-    def normalize(self):
+    def normalize(self) -> "Version":
         return Version(
             release=self.release,
             epoch=IMPLICIT_ZERO if self.epoch == 0 else self.epoch,
@@ -464,16 +499,16 @@ class Version(object):
             local=_normalize_local(self.local),
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         parts = []
 
         if self.v:
-            parts.append('v')
+            parts.append("v")
 
         if not self.epoch_implicit:
-            parts.append('{}!'.format(self.epoch))
+            parts.append(f"{self.epoch}!")
 
-        parts.append('.'.join(str(x) for x in self.release))
+        parts.append(".".join(str(x) for x in self.release))
 
         if self.pre_tag is not None:
             if self.pre_sep1:
@@ -485,7 +520,7 @@ class Version(object):
                 parts.append(str(self.pre))
 
         if self.post_tag is None and self.post is not None:
-            parts.append('-{}'.format(self.post))
+            parts.append(f"-{self.post}")
         elif self.post_tag is not None:
             if self.post_sep1:
                 parts.append(self.post_sep1)
@@ -498,53 +533,53 @@ class Version(object):
         if self.dev is not None:
             if self.dev_sep is not None:
                 parts.append(self.dev_sep)
-            parts.append('dev')
+            parts.append("dev")
             if not self.dev_implicit:
                 parts.append(str(self.dev))
 
         if self.local is not None:
-            parts.append('+{}'.format(self.local))
+            parts.append(f"+{self.local}")
 
-        return ''.join(parts)
+        return "".join(parts)
 
-    def __repr__(self):
-        return '<{} {!r}>'.format(self.__class__.__name__, str(self))
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} {str(self)!r}>"
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self._key)
 
-    def __lt__(self, other):
+    def __lt__(self, other: Any) -> bool:
         return self._compare(other, operator.lt)
 
-    def __le__(self, other):
+    def __le__(self, other: Any) -> bool:
         return self._compare(other, operator.le)
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         return self._compare(other, operator.eq)
 
-    def __ge__(self, other):
+    def __ge__(self, other: Any) -> bool:
         return self._compare(other, operator.ge)
 
-    def __gt__(self, other):
+    def __gt__(self, other: Any) -> bool:
         return self._compare(other, operator.gt)
 
-    def __ne__(self, other):
+    def __ne__(self, other: Any) -> bool:
         return self._compare(other, operator.ne)
 
-    def _compare(self, other, method):
+    def _compare(self, other: Any, method: Callable[[Any, Any], bool]) -> bool:
         if not isinstance(other, Version):
             return NotImplemented
 
         return method(self._key, other._key)
 
     @property
-    def public(self):
+    def public(self) -> str:
         """A string representing the public version portion of this
         :class:`Version` instance.
         """
-        return str(self).split('+', 1)[0]
+        return str(self).split("+", 1)[0]
 
-    def base_version(self):
+    def base_version(self) -> "Version":
         """Return a new :class:`Version` instance for the base version of the
         current instance. The base version is the public version of the project
         without any pre or post release markers.
@@ -554,120 +589,155 @@ class Version(object):
         return self.replace(pre=None, post=None, dev=None, local=None)
 
     @property
-    def is_prerelease(self):
+    def is_prerelease(self) -> bool:
         """A boolean value indicating whether this :class:`Version` instance
         represents a pre-release and/or development release.
         """
         return self.dev is not None or self.pre is not None
 
     @property
-    def is_alpha(self):
+    def is_alpha(self) -> bool:
         """A boolean value indicating whether this :class:`Version` instance
         represents an alpha pre-release.
         """
-        return _normalize_pre_tag(self.pre_tag) == 'a'
+        return _normalize_pre_tag(self.pre_tag) == "a"
 
     @property
-    def is_beta(self):
+    def is_beta(self) -> bool:
         """A boolean value indicating whether this :class:`Version` instance
         represents a beta pre-release.
         """
-        return _normalize_pre_tag(self.pre_tag) == 'b'
+        return _normalize_pre_tag(self.pre_tag) == "b"
 
     @property
-    def is_release_candidate(self):
+    def is_release_candidate(self) -> bool:
         """A boolean value indicating whether this :class:`Version` instance
         represents a release candidate pre-release.
         """
-        return _normalize_pre_tag(self.pre_tag) == 'rc'
+        return _normalize_pre_tag(self.pre_tag) == "rc"
 
     @property
-    def is_postrelease(self):
+    def is_postrelease(self) -> bool:
         """A boolean value indicating whether this :class:`Version` instance
         represents a post-release.
         """
         return self.post is not None
 
     @property
-    def is_devrelease(self):
+    def is_devrelease(self) -> bool:
         """A boolean value indicating whether this :class:`Version` instance
         represents a development release.
         """
         return self.dev is not None
 
-    def _attrs_as_init(self):
+    def _attrs_as_init(self) -> Dict[str, Any]:
         d = attr.asdict(self, filter=lambda attr, _: attr.init)
 
         if self.epoch_implicit:
-            d['epoch'] = IMPLICIT_ZERO
+            d["epoch"] = IMPLICIT_ZERO
 
         if self.pre_implicit:
-            d['pre'] = IMPLICIT_ZERO
+            d["pre"] = IMPLICIT_ZERO
 
         if self.post_implicit:
-            d['post'] = IMPLICIT_ZERO
+            d["post"] = IMPLICIT_ZERO
 
         if self.dev_implicit:
-            d['dev'] = IMPLICIT_ZERO
+            d["dev"] = IMPLICIT_ZERO
 
         if self.pre is None:
-            del d['pre']
-            del d['pre_tag']
-            del d['pre_sep1']
-            del d['pre_sep2']
+            del d["pre"]
+            del d["pre_tag"]
+            del d["pre_sep1"]
+            del d["pre_sep2"]
 
         if self.post is None:
-            del d['post']
-            del d['post_tag']
-            del d['post_sep1']
-            del d['post_sep2']
+            del d["post"]
+            del d["post_tag"]
+            del d["post_sep1"]
+            del d["post_sep2"]
         elif self.post_tag is None:
-            del d['post_sep1']
-            del d['post_sep2']
+            del d["post_sep1"]
+            del d["post_sep2"]
 
         if self.dev is None:
-            del d['dev']
-            del d['dev_sep']
+            del d["dev"]
+            del d["dev_sep"]
 
         return d
 
-    def replace(self, **kwargs):
+    def replace(
+        self,
+        release: Union[int, Iterable[int], UnsetType] = UNSET,
+        v: Union[bool, UnsetType] = UNSET,
+        epoch: Union[ImplicitZero, int, UnsetType] = UNSET,
+        pre_tag: Union[PreTag, None, UnsetType] = UNSET,
+        pre: Union[ImplicitZero, int, None, UnsetType] = UNSET,
+        post: Union[ImplicitZero, int, None, UnsetType] = UNSET,
+        dev: Union[ImplicitZero, int, None, UnsetType] = UNSET,
+        local: Union[str, None, UnsetType] = UNSET,
+        pre_sep1: Union[Separator, None, UnsetType] = UNSET,
+        pre_sep2: Union[Separator, None, UnsetType] = UNSET,
+        post_sep1: Union[Separator, None, UnsetType] = UNSET,
+        post_sep2: Union[Separator, None, UnsetType] = UNSET,
+        dev_sep: Union[Separator, None, UnsetType] = UNSET,
+        post_tag: Union[PostTag, None, UnsetType] = UNSET,
+    ) -> "Version":
         """Return a new :class:`Version` instance with the same attributes,
         except for those given as keyword arguments. Arguments have the same
         meaning as they do when constructing a new :class:`Version` instance
         manually.
         """
+        kwargs = dict(
+            release=release,
+            v=v,
+            epoch=epoch,
+            pre_tag=pre_tag,
+            pre=pre,
+            post=post,
+            dev=dev,
+            local=local,
+            pre_sep1=pre_sep1,
+            pre_sep2=pre_sep2,
+            post_sep1=post_sep1,
+            post_sep2=post_sep2,
+            dev_sep=dev_sep,
+            post_tag=post_tag,
+        )
+        kwargs = {k: v for k, v in kwargs.items() if v is not UNSET}
         d = self._attrs_as_init()
 
-        if kwargs.get('post_tag', UNSET) is None:
+        if kwargs.get("post_tag", UNSET) is None:
             # ensure we don't carry over separators for new implicit post
             # release. By popping from d, there will still be an error if the
             # user tries to set them in kwargs
-            d.pop('post_sep1', None)
-            d.pop('post_sep2', None)
+            d.pop("post_sep1", None)
+            d.pop("post_sep2", None)
 
-        if kwargs.get('post', UNSET) is None:
-            kwargs['post_tag'] = UNSET
-            d.pop('post_sep1', None)
-            d.pop('post_sep2', None)
+        if kwargs.get("post", UNSET) is None:
+            kwargs["post_tag"] = UNSET
+            d.pop("post_sep1", None)
+            d.pop("post_sep2", None)
 
-        if kwargs.get('pre', UNSET) is None:
-            kwargs['pre_tag'] = None
-            d.pop('pre_sep1', None)
-            d.pop('pre_sep2', None)
+        if kwargs.get("pre", UNSET) is None:
+            kwargs["pre_tag"] = None
+            d.pop("pre_sep1", None)
+            d.pop("pre_sep2", None)
 
-        if kwargs.get('dev', UNSET) is None:
-            d.pop('dev_sep', None)
+        if kwargs.get("dev", UNSET) is None:
+            d.pop("dev_sep", None)
 
         d.update(kwargs)
         return Version(**d)
 
-    def _set_release(self, index, value=None, bump=True):
+    def _set_release(
+        self, index: int, value: Optional[int] = None, bump: bool = True
+    ) -> "Version":
         if not isinstance(index, int):
-            raise TypeError('index must be an integer')
+            raise TypeError("index must be an integer")
 
         if index < 0:
-            raise ValueError('index cannot be negative')
+            raise ValueError("index cannot be negative")
 
         release = list(self.release)
         new_len = index + 1
@@ -675,7 +745,7 @@ class Version(object):
         if len(release) < new_len:
             release.extend(itertools.repeat(0, new_len - len(release)))
 
-        def new_parts(i, n):
+        def new_parts(i: int, n: int) -> int:
             if i < index:
                 return n
             if i == index:
@@ -686,11 +756,10 @@ class Version(object):
                 return 0
             return n
 
-        release = itertools.starmap(new_parts, enumerate(release))
-        return self.replace(release=release)
+        new_release = itertools.starmap(new_parts, enumerate(release))
+        return self.replace(release=new_release)
 
-    @doc_signature('(*, by=1)')
-    def bump_epoch(self, **kwargs):
+    def bump_epoch(self, *, by: int = 1) -> "Version":
         """Return a new :class:`Version` instance with the epoch number
         bumped.
 
@@ -706,14 +775,12 @@ class Version(object):
             >>> Version.parse('2!1.4').bump_epoch(by=-1)
             <Version '1!1.4'>
         """
-        _, by = kwonly_args(kwargs, (), [('by', 1)])
         check_by(by, self.epoch)
 
         epoch = by - 1 if self.epoch is None else self.epoch + by
         return self.replace(epoch=epoch)
 
-    @doc_signature('(*, index)')
-    def bump_release(self, **kwargs):
+    def bump_release(self, *, index: int) -> "Version":
         """Return a new :class:`Version` instance with the release number
         bumped at the given `index`.
 
@@ -746,11 +813,9 @@ class Version(object):
             the value at a specific index without setting subsequenct indices
             to zero.
         """
-        _, index = kwonly_args(kwargs, ('index',))
         return self._set_release(index=index)
 
-    @doc_signature('(*, index, value)')
-    def bump_release_to(self, **kwargs):
+    def bump_release_to(self, *, index: int, value: int) -> "Version":
         """Return a new :class:`Version` instance with the release number
         bumped at the given `index` to `value`. May be used for versioning
         schemes such as `CalVer`_.
@@ -799,11 +864,9 @@ class Version(object):
             the value at a specific index without setting subsequenct indices
             to zero.
         """
-        _, index, value = kwonly_args(kwargs, ('index', 'value'))
         return self._set_release(index=index, value=value)
 
-    @doc_signature('(*, index, value)')
-    def set_release(self, **kwargs):
+    def set_release(self, *, index: int, value: int) -> "Version":
         """Return a new :class:`Version` instance with the release number
         at the given `index` set to `value`.
 
@@ -829,11 +892,9 @@ class Version(object):
 
             For typical use cases, see :meth:`bump_release`.
         """
-        _, index, value = kwonly_args(kwargs, ('index', 'value'))
         return self._set_release(index=index, value=value, bump=False)
 
-    @doc_signature('(tag=None, *, by=1)')
-    def bump_pre(self, tag=None, **kwargs):
+    def bump_pre(self, tag: Optional[PreTag] = None, *, by: int = 1) -> "Version":
         """Return a new :class:`Version` instance with the pre-release number
         bumped.
 
@@ -857,27 +918,35 @@ class Version(object):
             >>> Version.parse('1.4b1').bump_pre(by=-1)
             <Version '1.4b0'>
         """
-        _, by = kwonly_args(kwargs, (), [('by', 1)])
         check_by(by, self.pre)
 
         pre = by - 1 if self.pre is None else self.pre + by
 
         if self.pre_tag is None:
             if tag is None:
-                raise ValueError(
-                    "Cannot bump without pre_tag. Use .bump_pre('<tag>')")
+                raise ValueError("Cannot bump without pre_tag. Use .bump_pre('<tag>')")
         else:
             # This is an error because different tags have different meanings
             if tag is not None and self.pre_tag != tag:
                 raise ValueError(
-                    'Cannot bump with pre_tag mismatch ({0} != {1}). Use '
-                    '.replace(pre_tag={1!r})'.format(self.pre_tag, tag))
+                    "Cannot bump with pre_tag mismatch ({0} != {1}). Use "
+                    ".replace(pre_tag={1!r})".format(self.pre_tag, tag)
+                )
             tag = self.pre_tag
 
         return self.replace(pre=pre, pre_tag=tag)
 
-    @doc_signature('(tag=None, *, by=1)')
-    def bump_post(self, tag=UNSET, **kwargs):
+    @overload
+    def bump_post(self, tag: Optional[PostTag], *, by: int = 1) -> "Version":
+        pass
+
+    @overload
+    def bump_post(self, *, by: int = 1) -> "Version":
+        pass
+
+    def bump_post(
+        self, tag: Union[PostTag, None, UnsetType] = UNSET, *, by: int = 1
+    ) -> "Version":
         """Return a new :class:`Version` instance with the post release number
         bumped.
 
@@ -900,7 +969,6 @@ class Version(object):
             >>> Version.parse('1.4.post2').bump_post(by=-1)
             <Version '1.4.post1'>
         """
-        _, by = kwonly_args(kwargs, (), [('by', 1)])
         check_by(by, self.post)
 
         post = by - 1 if self.post is None else self.post + by
@@ -908,8 +976,7 @@ class Version(object):
             tag = self.post_tag
         return self.replace(post=post, post_tag=tag)
 
-    @doc_signature('(*, by=1)')
-    def bump_dev(self, **kwargs):
+    def bump_dev(self, *, by: int = 1) -> "Version":
         """Return a new :class:`Version` instance with the development release
         number bumped.
 
@@ -927,14 +994,12 @@ class Version(object):
             >>> Version.parse('1.4.dev3').bump_dev(by=-1)
             <Version '1.4.dev2'>
         """
-        _, by = kwonly_args(kwargs, (), [('by', 1)])
         check_by(by, self.dev)
 
         dev = by - 1 if self.dev is None else self.dev + by
         return self.replace(dev=dev)
 
-    @doc_signature('(*, min_length=1)')
-    def truncate(self, **kwargs):
+    def truncate(self, *, min_length: int = 1) -> "Version":
         """Return a new :class:`Version` instance with trailing zeros removed
         from the release segment.
 
@@ -950,13 +1015,11 @@ class Version(object):
             >>> Version.parse('1').truncate(min_length=2)
             <Version '1.0'>
         """
-        _, min_length = kwonly_args(kwargs, (), [('min_length', 1)])
-
         if not isinstance(min_length, int):
-            raise TypeError('min_length must be an integer')
+            raise TypeError("min_length must be an integer")
 
         if min_length < 1:
-            raise ValueError('min_length must be positive')
+            raise ValueError("min_length must be positive")
 
         release = list(self.release)
         if len(release) < min_length:
@@ -966,43 +1029,53 @@ class Version(object):
             last((i for i, n in enumerate(release) if n), default=0),
             min_length - 1,
         )
-        return self.replace(release=release[:last_nonzero + 1])
+        return self.replace(release=release[: last_nonzero + 1])
 
 
-def _normalize_pre_tag(pre_tag):
+def _normalize_pre_tag(pre_tag: Optional[PreTag]) -> Optional[NormalizedPreTag]:
     if pre_tag is None:
         return None
 
-    if pre_tag == 'alpha':
-        pre_tag = 'a'
-    elif pre_tag == 'beta':
-        pre_tag = 'b'
-    elif pre_tag in {'c', 'pre', 'preview'}:
-        pre_tag = 'rc'
+    if pre_tag == "alpha":
+        pre_tag = "a"
+    elif pre_tag == "beta":
+        pre_tag = "b"
+    elif pre_tag in {"c", "pre", "preview"}:
+        pre_tag = "rc"
 
-    return pre_tag
+    return cast(NormalizedPreTag, pre_tag)
 
 
-def _normalize_local(local):
+def _normalize_local(local: Optional[str]) -> Optional[str]:
     if local is None:
         return None
 
-    return '.'.join(map(str, _parse_local_version(local)))
+    return ".".join(map(str, _parse_local_version(local)))
 
 
-def _cmpkey(epoch, release, pre_tag, pre_num, post, dev, local):
+def _cmpkey(
+    epoch: int,
+    release: Tuple[int, ...],
+    pre_tag: Optional[NormalizedPreTag],
+    pre_num: Optional[int],
+    post: Optional[int],
+    dev: Optional[int],
+    local: Optional[str],
+) -> Any:
     # When we compare a release version, we want to compare it with all of the
     # trailing zeros removed. So we'll use a reverse the list, drop all the now
     # leading zeros until we come to something non zero, then take the rest
     # re-reverse it back into the correct order and make it a tuple and use
     # that for our sorting key.
     release = tuple(
-        reversed(list(
-            itertools.dropwhile(
-                lambda x: x == 0,
-                reversed(release),
+        reversed(
+            list(
+                itertools.dropwhile(
+                    lambda x: x == 0,
+                    reversed(release),
+                )
             )
-        ))
+        )
     )
 
     pre = pre_tag, pre_num
@@ -1012,23 +1085,23 @@ def _cmpkey(epoch, release, pre_tag, pre_num, post, dev, local):
     # if there is not a pre or a post segment. If we have one of those then
     # the normal sorting rules will handle this case correctly.
     if pre_num is None and post is None and dev is not None:
-        pre = -Infinity
+        pre = -Infinity  # type: ignore[assignment]
     # Versions without a pre-release (except as noted above) should sort after
     # those with one.
     elif pre_num is None:
-        pre = Infinity
+        pre = Infinity  # type: ignore[assignment]
 
     # Versions without a post segment should sort before those with one.
     if post is None:
-        post = -Infinity
+        post = -Infinity  # type: ignore[assignment]
 
     # Versions without a development segment should sort after those with one.
     if dev is None:
-        dev = Infinity
+        dev = Infinity  # type: ignore[assignment]
 
     if local is None:
         # Versions without a local segment should sort before those with one.
-        local = -Infinity
+        local = -Infinity  # type: ignore[assignment]
     else:
         # Versions with a local segment need that segment parsed to implement
         # the sorting rules in PEP440.
@@ -1037,7 +1110,7 @@ def _cmpkey(epoch, release, pre_tag, pre_num, post, dev, local):
         # - Numeric segments sort numerically
         # - Shorter versions sort before longer versions when the prefixes
         #   match exactly
-        local = tuple(
+        local = tuple(  # type: ignore[assignment]
             (i, "") if isinstance(i, int) else (-Infinity, i)
             for i in _parse_local_version(local)
         )
@@ -1048,7 +1121,17 @@ def _cmpkey(epoch, release, pre_tag, pre_num, post, dev, local):
 _local_version_separators = re.compile(r"[._-]")
 
 
-def _parse_local_version(local):
+@overload
+def _parse_local_version(local: str) -> Tuple[Union[str, int], ...]:
+    pass
+
+
+@overload
+def _parse_local_version(local: None) -> None:
+    pass
+
+
+def _parse_local_version(local: Optional[str]) -> Optional[Tuple[Union[str, int], ...]]:
     """
     Takes a string like abc.1.twelve and turns it into ("abc", 1, "twelve").
     """
@@ -1057,3 +1140,5 @@ def _parse_local_version(local):
             part.lower() if not part.isdigit() else int(part)
             for part in _local_version_separators.split(local)
         )
+
+    return None
