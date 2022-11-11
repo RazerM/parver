@@ -403,7 +403,7 @@ class Version:
 
             if self.pre_implicit:
                 raise ValueError(
-                    "post_tag cannot be None with an implicit pre-release " "(pre='')."
+                    "post_tag cannot be None with an implicit pre-release (pre='')."
                 )
 
             set_("post_sep1", "-")
