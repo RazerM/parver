@@ -25,7 +25,7 @@ def epoch():
 def release(draw):
     return draw(
         num_str.map(lambda s: [s] + draw(lists(num_str.map(lambda s: "." + s)))).map(
-            lambda l: "".join(l)
+            lambda parts: "".join(parts)
         )
     )
 
@@ -131,7 +131,7 @@ def local(draw, strict=False):
 
     part = local_segment()
     sep_part = sep.map(lambda s: s + draw(local_segment()))
-    sep_parts = lists(sep_part).map(lambda l: "".join(l))
+    sep_parts = lists(sep_part).map(lambda parts: "".join(parts))
 
     return draw(one_of(just(""), part.map(lambda s: "+" + s + draw(sep_parts))))
 
