@@ -9,7 +9,7 @@ from importlib.metadata import distribution
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "parver"
-copyrightx = "2018, Frazer McLean"
+copyright = "2018, Frazer McLean"
 author = "Frazer McLean"
 release = distribution("parver").version
 
