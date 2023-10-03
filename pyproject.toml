@@ -42,6 +42,12 @@ pep8test = ["flake8", "pep8-naming"]
 Documentation = "https://parver.readthedocs.io"
 "Source Code" = "https://github.com/RazerM/parver"
 
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [tool.coverage.run]
 branch = true
 source = ["parver", "tests/"]
