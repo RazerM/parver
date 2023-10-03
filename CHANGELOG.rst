@@ -1,7 +1,14 @@
 Changelog
 =========
 
-.. _unreleasedunreleased:
+Unreleased
+----------
+
+Removed
+~~~~~~~
+
+- Support for Python 3.7
+
 
 0.4 (2022-11-11)
 ----------------
