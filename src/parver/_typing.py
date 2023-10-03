@@ -1,12 +1,7 @@
 import sys
-from typing import Union
+from typing import Literal, Union
 
 from arpeggio import NonTerminal, Terminal
-
-if sys.version_info >= (3, 8):
-    from typing import Literal
-else:
-    from typing_extensions import Literal
 
 if sys.version_info >= (3, 10):
     from typing import TypeAlias
