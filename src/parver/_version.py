@@ -52,7 +52,7 @@ def implicit_or(
         if value == IMPLICIT_ZERO:
             return
 
-        validator(inst, attr, value)  # type: ignore[operator]
+        validator(inst, attr, value)
 
     return validate
 
