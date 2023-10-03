@@ -1,8 +1,13 @@
 Changelog
 =========
 
-Unreleased
-----------
+0.5 (2023-10-03)
+----------------
+
+Added
+~~~~~
+
+- Support for Python 3.12
 
 Removed
 ~~~~~~~
