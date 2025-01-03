@@ -19,10 +19,10 @@ canonical = r"""
     version = epoch? release pre? post? dev? local? EOF
     epoch = int "!"
     release = int (dot int)*
-    pre = pre_tag pre_post_num
+    pre = pre_tag opt_sep_num
     pre_tag = "a" / "b" / "rc"
-    post = sep post_tag pre_post_num
-    pre_post_num = int
+    post = sep post_tag opt_sep_num
+    opt_sep_num = int
     post_tag = "post"
     dev = sep "dev" int
     local = "+" local_part (sep local_part)*
@@ -38,13 +38,13 @@ permissive = r"""
     v = "v"
     epoch = int "!"
     release = int (dot int)*
-    pre = sep? pre_tag pre_post_num?
+    pre = sep? pre_tag opt_sep_num?
     pre_tag = "c" / "rc" / "alpha" / "a" / "beta" / "b" / "preview" / "pre"
-    post = sep? post_tag pre_post_num?
+    post = sep? post_tag opt_sep_num?
     post_implicit = "-" int
     post_tag = "post" / "rev" / "r"
-    pre_post_num = sep? int
-    dev = sep? "dev" int?
+    dev = sep? "dev" opt_sep_num?
+    opt_sep_num = sep? int
     local = "+" local_part (sep local_part)*
     local_part = alpha / int
     sep = dot / "-" / "_"
@@ -116,10 +116,10 @@ class VersionVisitor(PTNodeVisitor):  # type: ignore[misc]
 
         return segment.Pre(sep1=sep1, tag=tag, sep2=sep2, value=num)
 
-    def visit_pre_post_num(
+    def visit_opt_sep_num(
         self, node: Node, children: SemanticActionResults
     ) -> Tuple[Sep, int]:
-        # when "pre_post_num = int", visit_int isn't called for some reason
+        # when "opt_sep_num = int", visit_int isn't called for some reason
         # I don't understand. Let's call int() manually
         if isinstance(node, Terminal):
             return Sep(None), int(node.value)
@@ -174,21 +174,31 @@ class VersionVisitor(PTNodeVisitor):  # type: ignore[misc]
 
     def visit_dev(self, node: Node, children: SemanticActionResults) -> segment.Dev:
         num: Union[ImplicitZero, int] = IMPLICIT_ZERO
-        sep: Union[Separator, None, UnsetType] = UNSET
+        sep1: Union[Separator, None, UnsetType] = UNSET
+        sep2: Union[Separator, None, UnsetType] = UNSET
 
         for token in children:
-            if sep is UNSET:
-                if isinstance(token, Sep):
-                    sep = token.value
-                else:
-                    num = token
-            else:
+            if isinstance(token, Sep):
+                assert sep1 is UNSET
+                sep1 = token.value
+            elif isinstance(token, int):
+                # we should only get an int if there's no sep2 - if there is,
+                # we should get a tuple
+                assert sep2 is UNSET
+                sep2 = None
                 num = token
+            elif isinstance(token, tuple):
+                assert len(token) == 2
+                sep2 = token[0].value
+                num = token[1]
+            else:
+                raise AssertionError(f"unknown dev child token type: {token!r}")
 
-        if isinstance(sep, UnsetType):
-            sep = None
+        # if there is a dev segment at all, the first sep is always known
+        if isinstance(sep1, UnsetType):
+            sep1 = None
 
-        return segment.Dev(value=num, sep=sep)
+        return segment.Dev(value=num, sep1=sep1, sep2=sep2)
 
     def visit_local(self, node: Node, children: SemanticActionResults) -> segment.Local:
         return segment.Local("".join(str(getattr(c, "value", c)) for c in children))

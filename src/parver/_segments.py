@@ -45,7 +45,8 @@ class Post:
 @attr.s(slots=True)
 class Dev:
     value: Union[ImplicitZero, int] = attr.ib()
-    sep: Optional[Separator] = attr.ib()
+    sep1: Optional[Separator] = attr.ib()
+    sep2: Union[Separator, UnsetType, None] = attr.ib()
 
 
 @attr.s(slots=True)
