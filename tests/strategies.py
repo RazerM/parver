@@ -105,7 +105,11 @@ def dev(draw, strict=False):
 
     blank = just("")
 
-    num_part = num_str
+    sep2 = separator(strict=strict, optional=True)
+    if strict:
+        sep2 = blank
+
+    num_part = sep2.map(lambda s: s + draw(num_str))
     if not strict:
         num_part = one_of(blank, num_part)
 

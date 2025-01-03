@@ -167,6 +167,9 @@ class Version:
     :param dev_sep: Specify an alternate separator before the development
         release segment. The normal form is ``'.'``.
 
+    :param dev_sep2: Specify an alternate separator between the identifier and
+        number. The normal form is `None`.
+
     :param post_tag: Specify alternate post release identifier `rev` or `r`.
         May be `None` to signify an `implicit post release`_.
 
@@ -258,6 +261,10 @@ class Version:
 
         The separator before the develepment release identifier.
 
+    .. attribute:: dev_sep2
+
+        The separator between the development release identifier and number.
+
     .. attribute:: post_tag
 
         If this :class:`Version` instance represents a post release, this
@@ -320,6 +327,9 @@ class Version:
         default=UNSET, validator=validate_sep_or_unset
     )
     dev_sep: Optional[Separator] = attr.ib(
+        default=UNSET, validator=validate_sep_or_unset
+    )
+    dev_sep2: Union[Separator, UnsetType, None] = attr.ib(
         default=UNSET, validator=validate_sep_or_unset
     )
     post_tag: Optional[PostTag] = attr.ib(default=UNSET, validator=validate_post_tag)
@@ -429,9 +439,14 @@ class Version:
         elif self.dev is None:
             if self.dev_sep is not UNSET:
                 raise ValueError("Cannot set dev_sep without dev.")
+            if self.dev_sep2 is not UNSET:
+                raise ValueError("Cannot set dev_sep2 without dev.")
 
         if self.dev_sep is UNSET:
             set_("dev_sep", None if self.dev is None else ".")
+
+        if self.dev_sep2 is UNSET:
+            set_("dev_sep2", None)
 
     @classmethod
     def parse(cls, version: str, strict: bool = False) -> "Version":
@@ -479,6 +494,7 @@ class Version:
             elif isinstance(s, segment.Dev):
                 kwargs["dev"] = s.value
                 kwargs["dev_sep"] = s.sep
+                kwargs["dev_sep2"] = s.sep2
             elif isinstance(s, segment.Local):
                 kwargs["local"] = s.value
             elif isinstance(s, segment.V):
@@ -534,6 +550,8 @@ class Version:
             if self.dev_sep is not None:
                 parts.append(self.dev_sep)
             parts.append("dev")
+            if self.dev_sep2:
+                parts.append(self.dev_sep2)
             if not self.dev_implicit:
                 parts.append(str(self.dev))
 
@@ -663,6 +681,7 @@ class Version:
         if self.dev is None:
             del d["dev"]
             del d["dev_sep"]
+            del d["dev_sep2"]
 
         return d
 
@@ -681,6 +700,7 @@ class Version:
         post_sep1: Union[Separator, None, UnsetType] = UNSET,
         post_sep2: Union[Separator, None, UnsetType] = UNSET,
         dev_sep: Union[Separator, None, UnsetType] = UNSET,
+        dev_sep2: Union[Separator, None, UnsetType] = UNSET,
         post_tag: Union[PostTag, None, UnsetType] = UNSET,
     ) -> "Version":
         """Return a new :class:`Version` instance with the same attributes,
@@ -702,6 +722,7 @@ class Version:
             post_sep1=post_sep1,
             post_sep2=post_sep2,
             dev_sep=dev_sep,
+            dev_sep2=dev_sep2,
             post_tag=post_tag,
         )
         kwargs = {k: v for k, v in kwargs.items() if v is not UNSET}
@@ -726,6 +747,7 @@ class Version:
 
         if kwargs.get("dev", UNSET) is None:
             d.pop("dev_sep", None)
+            d.pop("dev_sep2", None)
 
         d.update(kwargs)
         return Version(**d)

@@ -43,8 +43,8 @@ permissive = r"""
     post = sep? post_tag pre_post_num?
     post_implicit = "-" int
     post_tag = "post" / "rev" / "r"
+    dev = sep? "dev" pre_post_num?
     pre_post_num = sep? int
-    dev = sep? "dev" int?
     local = "+" local_part (sep local_part)*
     local_part = alpha / int
     sep = dot / "-" / "_"
@@ -175,20 +175,30 @@ class VersionVisitor(PTNodeVisitor):  # type: ignore[misc]
     def visit_dev(self, node: Node, children: SemanticActionResults) -> segment.Dev:
         num: Union[ImplicitZero, int] = IMPLICIT_ZERO
         sep: Union[Separator, None, UnsetType] = UNSET
+        sep2: Union[Separator, None, UnsetType] = UNSET
 
         for token in children:
-            if sep is UNSET:
-                if isinstance(token, Sep):
-                    sep = token.value
-                else:
-                    num = token
-            else:
+            if isinstance(token, Sep):
+                assert sep is UNSET
+                sep = token.value
+            elif isinstance(token, int):
+                # we should only get an int if there's no sep2 - if there is,
+                # we should get a tuple
+                assert sep2 is UNSET
+                sep2 = None
                 num = token
+            elif isinstance(token, tuple):
+                assert len(token) == 2
+                sep2 = token[0].value
+                num = token[1]
+            else:
+                raise AssertionError(f"unknown dev child token type: {token!r}")
 
+        # if there is a dev segment at all, the first sep is always known
         if isinstance(sep, UnsetType):
             sep = None
 
-        return segment.Dev(value=num, sep=sep)
+        return segment.Dev(value=num, sep=sep, sep2=sep2)
 
     def visit_local(self, node: Node, children: SemanticActionResults) -> segment.Local:
         return segment.Local("".join(str(getattr(c, "value", c)) for c in children))
