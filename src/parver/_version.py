@@ -156,13 +156,13 @@ class Version:
         segment. The normal form is `None`.
 
     :param pre_sep2: Specify an alternate separator between the identifier and
-        number. The normal form is ``'.'``.
+        number. The normal form is `None`.
 
     :param post_sep1: Specify an alternate separator before the post release
         segment. The normal form is ``'.'``.
 
     :param post_sep2: Specify an alternate separator between the identifier and
-        number. The normal form is ``'.'``.
+        number. The normal form is `None`.
 
     :param dev_sep: Specify an alternate separator before the development
         release segment. The normal form is ``'.'``.
