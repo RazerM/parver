@@ -313,13 +313,13 @@ class Version:
 
     pre_sep1: Optional[Separator] = attr.ib(default=None, validator=validate_sep)
     pre_sep2: Optional[Separator] = attr.ib(default=None, validator=validate_sep)
-    post_sep1: Optional[Separator] = attr.ib(
+    post_sep1: Union[Separator, UnsetType, None] = attr.ib(
         default=UNSET, validator=validate_sep_or_unset
     )
-    post_sep2: Optional[Separator] = attr.ib(
+    post_sep2: Union[Separator, UnsetType, None] = attr.ib(
         default=UNSET, validator=validate_sep_or_unset
     )
-    dev_sep: Optional[Separator] = attr.ib(
+    dev_sep: Union[Separator, UnsetType, None] = attr.ib(
         default=UNSET, validator=validate_sep_or_unset
     )
     post_tag: Optional[PostTag] = attr.ib(default=UNSET, validator=validate_post_tag)
