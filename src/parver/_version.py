@@ -244,7 +244,7 @@ class Version:
 
     .. attribute:: pre_sep2
 
-        The seperator between the pre-release identifier and number.
+        The separator between the pre-release identifier and number.
 
     .. attribute:: post_sep1
 
@@ -252,7 +252,7 @@ class Version:
 
     .. attribute:: post_sep2
 
-        The seperator between the post release identifier and number.
+        The separator between the post release identifier and number.
 
     .. attribute:: dev_sep
 
