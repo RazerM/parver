@@ -548,25 +548,25 @@ class Version:
     def __hash__(self) -> int:
         return hash(self._key)
 
-    def __lt__(self, other: Any) -> bool:
+    def __lt__(self, other: Any) -> Any:
         return self._compare(other, operator.lt)
 
-    def __le__(self, other: Any) -> bool:
+    def __le__(self, other: Any) -> Any:
         return self._compare(other, operator.le)
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: Any) -> Any:
         return self._compare(other, operator.eq)
 
-    def __ge__(self, other: Any) -> bool:
+    def __ge__(self, other: Any) -> Any:
         return self._compare(other, operator.ge)
 
-    def __gt__(self, other: Any) -> bool:
+    def __gt__(self, other: Any) -> Any:
         return self._compare(other, operator.gt)
 
-    def __ne__(self, other: Any) -> bool:
+    def __ne__(self, other: Any) -> Any:
         return self._compare(other, operator.ne)
 
-    def _compare(self, other: Any, method: Callable[[Any, Any], bool]) -> bool:
+    def _compare(self, other: Any, method: Callable[[Any, Any], bool]) -> Any:
         if not isinstance(other, Version):
             return NotImplemented
 
