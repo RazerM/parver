@@ -43,7 +43,7 @@ def unset_or(validator: _ValidatorType) -> _ValidatorType:
 
 
 def implicit_or(
-    validator: Union[_ValidatorType, Sequence[_ValidatorType]]
+    validator: Union[_ValidatorType, Sequence[_ValidatorType]],
 ) -> _ValidatorType:
     if isinstance(validator, Sequence):
         validator = and_(*validator)
