@@ -412,6 +412,27 @@ def test_replace_roundtrip(version):
             dict(pre=None, post=None, dev=None),
             "1.2",
         ),
+        # Verify that the dot between post and dev is parsed as dev_sep1 and
+        # not post_sep2
+        (
+            "1.post.dev",
+            dict(post=None),
+            "1.dev",
+        ),
+        # Verify that the dot between pre and dev is parsed as dev_sep1 and
+        # not pre_sep2
+        (
+            "1.pre.dev",
+            dict(pre=None),
+            "1.dev",
+        ),
+        # Verify that the dot between pre and post is parsed as post_sep1 and
+        # not pre_sep2
+        (
+            "1.pre.post",
+            dict(pre=None),
+            "1.post",
+        ),
     ],
 )
 def test_replace(before, kwargs, after):
@@ -677,6 +698,10 @@ def test_is_release_candidate(version):
 def test_ambiguous():
     with pytest.raises(ValueError, match="post_tag.*pre"):
         Version(release=1, pre="", pre_tag="rc", post=2, post_tag=None)
+
+    v = Version(release=1, pre="", pre_tag="rc", pre_sep2=".", post=2, post_tag=None)
+    assert str(v) == "1rc.-2"
+    assert str(v.normalize()) == "1rc0.post2"
 
 
 @pytest.mark.parametrize(

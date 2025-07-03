@@ -411,9 +411,10 @@ class Version:
                     "releases (post_tag=None)"
                 )
 
-            if self.pre_implicit:
+            if self.pre_implicit and self.pre_sep2 is None:
                 raise ValueError(
-                    "post_tag cannot be None with an implicit pre-release (pre='')."
+                    "post_tag cannot be None with an implicit pre-release "
+                    "(pre='') unless pre_sep2 is not None."
                 )
 
             set_("post_sep1", "-")

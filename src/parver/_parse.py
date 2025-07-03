@@ -43,8 +43,9 @@ permissive = r"""
     post = sep? post_tag opt_sep_num?
     post_implicit = "-" int
     post_tag = "post" / "rev" / "r"
-    dev = sep? "dev" opt_sep_num?
-    opt_sep_num = sep? int
+    dev = sep? dev_tag opt_sep_num?
+    dev_tag = "dev"
+    opt_sep_num = sep? int / sep !(post_tag / dev_tag)
     local = "+" local_part (sep local_part)*
     local_part = alpha / int
     sep = dot / "-" / "_"
@@ -118,14 +119,17 @@ class VersionVisitor(PTNodeVisitor):  # type: ignore[misc]
 
     def visit_opt_sep_num(
         self, node: Node, children: SemanticActionResults
-    ) -> Tuple[Sep, int]:
+    ) -> Tuple[Sep, Union[ImplicitZero, int]]:
         # when "opt_sep_num = int", visit_int isn't called for some reason
         # I don't understand. Let's call int() manually
         if isinstance(node, Terminal):
             return Sep(None), int(node.value)
 
         if len(children) == 1:
-            return Sep(None), children[0]
+            if isinstance(children[0], Sep):
+                return children[0], IMPLICIT_ZERO
+            else:
+                return Sep(None), children[0]
         else:
             return cast("Tuple[Sep, int]", tuple(children[:2]))
 

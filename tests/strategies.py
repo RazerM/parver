@@ -1,7 +1,9 @@
+import re
 import string
 
 from hypothesis.strategies import (
     composite,
+    from_regex,
     integers,
     just,
     lists,
@@ -165,3 +167,52 @@ def version_string(draw, strict=False):
 @composite
 def version_strategy(draw, strict=False):
     return Version.parse(draw(version_string(strict=strict)))
+
+
+# The unmodified regex from PEP 440
+version_pattern = r"""
+    v?
+    (?:
+        (?:(?P<epoch>[0-9]+)!)?                           # epoch
+        (?P<release>[0-9]+(?:\.[0-9]+)*)                  # release segment
+        (?P<pre>                                          # pre-release
+            [-_\.]?
+            (?P<pre_l>(a|b|c|rc|alpha|beta|pre|preview))
+            [-_\.]?
+            (?P<pre_n>[0-9]+)?
+        )?
+        (?P<post>                                         # post release
+            (?:-(?P<post_n1>[0-9]+))
+            |
+            (?:
+                [-_\.]?
+                (?P<post_l>post|rev|r)
+                [-_\.]?
+                (?P<post_n2>[0-9]+)?
+            )
+        )?
+        (?P<dev>                                          # dev release
+            [-_\.]?
+            (?P<dev_l>dev)
+            [-_\.]?
+            (?P<dev_n>[0-9]+)?
+        )?
+    )
+    (?:\+(?P<local>[a-z0-9]+(?:[-_\.][a-z0-9]+)*))?       # local version
+"""
+
+# Now update it so that hypothesis doesn't generate cases we don't care about.
+
+# Prevent leading zeros in integers
+version_pattern = version_pattern.replace("[0-9]+", "(?:0|[1-9][0-9]*)")
+# Prevent leading zeros in integer segments of local version identifiers
+version_pattern = version_pattern.replace(
+    "[a-z0-9]+", "(?:[a-z0-9]*[a-z][a-z0-9]*|0|[1-9][0-9]*)"
+)
+
+version_regex = re.compile(
+    rf"^{version_pattern}\Z",
+    re.VERBOSE | re.IGNORECASE,
+)
+
+version_string_from_pep440_regex = from_regex(version_regex)
