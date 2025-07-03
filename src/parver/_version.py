@@ -1,16 +1,12 @@
 import itertools
 import operator
 import re
+from collections.abc import Iterable, Sequence
 from functools import partial
 from typing import (
     Any,
     Callable,
-    Dict,
-    Iterable,
     Optional,
-    Sequence,
-    Set,
-    Tuple,
     Union,
     cast,
     overload,
@@ -25,9 +21,9 @@ from ._helpers import IMPLICIT_ZERO, UNSET, Infinity, UnsetType, last
 from ._parse import parse
 from ._typing import ImplicitZero, NormalizedPreTag, PostTag, PreTag, Separator
 
-POST_TAGS: Set[PostTag] = {"post", "rev", "r"}
-SEPS: Set[Separator] = {".", "-", "_"}
-PRE_TAGS: Set[PreTag] = {"c", "rc", "alpha", "a", "beta", "b", "preview", "pre"}
+POST_TAGS: set[PostTag] = {"post", "rev", "r"}
+SEPS: set[Separator] = {".", "-", "_"}
+PRE_TAGS: set[PreTag] = {"c", "rc", "alpha", "a", "beta", "b", "preview", "pre"}
 
 _ValidatorType = Callable[[Any, "Attribute[Any]", Any], None]
 
@@ -95,7 +91,7 @@ num_comp = [not_bool, is_int, is_non_negative]
 release_validator = deep_iterable(and_(*num_comp), and_(is_tuple, non_empty))
 
 
-def convert_release(release: Union[int, Iterable[int]]) -> Tuple[int, ...]:
+def convert_release(release: Union[int, Iterable[int]]) -> tuple[int, ...]:
     if isinstance(release, Iterable) and not isinstance(release, str):
         return tuple(release)
     elif isinstance(release, int):
@@ -281,7 +277,7 @@ class Version:
 
     """
 
-    release: Tuple[int, ...] = attr.ib(
+    release: tuple[int, ...] = attr.ib(
         converter=convert_release, validator=release_validator
     )
     v: bool = attr.ib(default=False, validator=is_bool)
@@ -467,7 +463,7 @@ class Version:
         """
         segments = parse(version, strict=strict)
 
-        kwargs: Dict[str, Any] = dict()
+        kwargs: dict[str, Any] = dict()
 
         for s in segments:
             if isinstance(s, segment.Epoch):
@@ -641,7 +637,7 @@ class Version:
         """
         return self.dev is not None
 
-    def _attrs_as_init(self) -> Dict[str, Any]:
+    def _attrs_as_init(self) -> dict[str, Any]:
         d = attr.asdict(self, filter=lambda attr, _: attr.init)
 
         if self.epoch_implicit:
@@ -1070,7 +1066,7 @@ def _normalize_local(local: Optional[str]) -> Optional[str]:
 
 def _cmpkey(
     epoch: int,
-    release: Tuple[int, ...],
+    release: tuple[int, ...],
     pre_tag: Optional[NormalizedPreTag],
     pre_num: Optional[int],
     post: Optional[int],
@@ -1137,7 +1133,7 @@ _local_version_separators = re.compile(r"[._-]")
 
 
 @overload
-def _parse_local_version(local: str) -> Tuple[Union[str, int], ...]:
+def _parse_local_version(local: str) -> tuple[Union[str, int], ...]:
     pass
 
 
@@ -1146,7 +1142,7 @@ def _parse_local_version(local: None) -> None:
     pass
 
 
-def _parse_local_version(local: Optional[str]) -> Optional[Tuple[Union[str, int], ...]]:
+def _parse_local_version(local: Optional[str]) -> Optional[tuple[Union[str, int], ...]]:
     """
     Takes a string like abc.1.twelve and turns it into ("abc", 1, "twelve").
     """

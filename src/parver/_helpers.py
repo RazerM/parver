@@ -1,5 +1,6 @@
 from collections import deque
-from typing import Any, Dict, Iterable, TypeVar, Union, cast, overload
+from collections.abc import Iterable
+from typing import Any, TypeVar, Union, cast, overload
 
 from ._typing import ImplicitZero
 
@@ -79,7 +80,7 @@ class NegativeInfinityType:
 NegativeInfinity = NegativeInfinityType()
 
 
-def fixup_module_metadata(module_name: str, namespace: Dict[str, Any]) -> None:
+def fixup_module_metadata(module_name: str, namespace: dict[str, Any]) -> None:
     def fix_one(obj: Any) -> None:
         mod = getattr(obj, "__module__", None)
         if mod is not None and mod.startswith("parver."):
