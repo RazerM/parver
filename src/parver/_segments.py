@@ -1,4 +1,4 @@
-from typing import Optional, Tuple, Union
+from typing import Optional, Union
 
 import attr
 
@@ -23,7 +23,7 @@ class Epoch:
 
 @attr.s(slots=True)
 class Release:
-    value: Tuple[int, ...] = attr.ib()
+    value: tuple[int, ...] = attr.ib()
 
 
 @attr.s(slots=True)

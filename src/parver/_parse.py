@@ -1,5 +1,5 @@
 from threading import Lock
-from typing import List, Optional, Tuple, Union, cast
+from typing import Optional, Union, cast
 
 import attr
 from arpeggio import (
@@ -71,7 +71,7 @@ class Tag:
 class VersionVisitor(PTNodeVisitor):  # type: ignore[misc]
     def visit_version(
         self, node: Node, children: SemanticActionResults
-    ) -> List[segment.Segment]:
+    ) -> list[segment.Segment]:
         return list(children)
 
     def visit_v(self, node: Node, children: SemanticActionResults) -> segment.V:
@@ -119,7 +119,7 @@ class VersionVisitor(PTNodeVisitor):  # type: ignore[misc]
 
     def visit_opt_sep_num(
         self, node: Node, children: SemanticActionResults
-    ) -> Tuple[Sep, Union[ImplicitZero, int]]:
+    ) -> tuple[Sep, Union[ImplicitZero, int]]:
         # when "opt_sep_num = int", visit_int isn't called for some reason
         # I don't understand. Let's call int() manually
         if isinstance(node, Terminal):
@@ -131,7 +131,7 @@ class VersionVisitor(PTNodeVisitor):  # type: ignore[misc]
             else:
                 return Sep(None), children[0]
         else:
-            return cast("Tuple[Sep, int]", tuple(children[:2]))
+            return cast("tuple[Sep, int]", tuple(children[:2]))
 
     def visit_pre_tag(self, node: Node, children: SemanticActionResults) -> Tag:
         return Tag(node.value)
@@ -247,7 +247,7 @@ def _get_parser(strict: bool) -> ParserPEG:
         return _permissive_parser
 
 
-def parse(version: str, strict: bool = False) -> List[segment.Segment]:
+def parse(version: str, strict: bool = False) -> list[segment.Segment]:
     parser = _get_parser(strict)
 
     try:
@@ -255,4 +255,4 @@ def parse(version: str, strict: bool = False) -> List[segment.Segment]:
     except NoMatch as exc:
         raise ParseError(str(exc)) from None
 
-    return cast("List[segment.Segment]", visit_parse_tree(tree, VersionVisitor()))
+    return cast("list[segment.Segment]", visit_parse_tree(tree, VersionVisitor()))

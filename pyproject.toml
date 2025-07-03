@@ -7,8 +7,8 @@ name = "parver"
 version = "0.5"
 description = "Parse and manipulate version numbers."
 readme = "README.rst"
-requires-python = ">=3.8"
-license = { text = "MIT" }
+requires-python = ">=3.9"
+license = "MIT"
 authors = [
     { name = "Frazer McLean", email = "frazer@frazermclean.co.uk" },
 ]
@@ -16,27 +16,47 @@ keywords = ["pep440", "version", "parse"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
-    "arpeggio>=1.7",
-    "attrs >= 19.2",
-    "typing-extensions; python_version<'3.10'",
+    "arpeggio>=2.0.2",
+    "attrs>=25.3.0",
+    "typing-extensions>=4.14.0; python_version<'3.10'",
 ]
 
-[project.optional-dependencies]
-test = ["pytest", "hypothesis", "pretend"]
-docs = ["sphinx", "furo"]
-docstest = ["doc8"]
-pep8test = ["flake8", "pep8-naming"]
+[dependency-groups]
+dev = [
+    { include-group = "coverage" },
+    { include-group = "nox" },
+    "hypothesis>=6.135.24",
+    "pretend>=1.0.9",
+    "pytest>=8.4.1",
+    "ruff==0.12.2",
+]
+docs = [
+    "furo>=2024.8.6",
+    "sphinx>=7.4.7",
+]
+docstest = [
+    { include-group = "docs" },
+    "doc8>=1.1.2",
+]
+coverage = [
+    "coverage[toml]>=7.9.2",
+]
+nox = [
+    "nox>=2025.5.1",
+]
+typing = [
+    "mypy>=1.16.1",
+]
 
 [project.urls]
 Documentation = "https://parver.readthedocs.io"
@@ -50,17 +70,25 @@ where = ["src"]
 
 [tool.coverage.run]
 branch = true
+relative_files = true
 source = ["parver", "tests/"]
+parallel = true
 
 [tool.coverage.paths]
-source = ["src/parver", ".tox/*/lib/python*/site-packages/parver"]
+source = ["src/parver", ".nox/**/site-packages/parver"]
 
 [tool.coverage.report]
 precision = 1
-exclude_lines = ["pragma: no cover", "pass"]
-
-[tool.isort]
-profile = "black"
+exclude_lines = [
+    "pragma: no cover",
+    '^\s*pass$',
+    '^\s*raise NotImplementedError\b',
+    '^\s*return NotImplemented\b',
+    '^\s*raise$',
+    '^\s*\.\.\.$',
+    '^\s*if (typing\.)?TYPE_CHECKING:',
+    '^\s*(typing\.)?assert_never\('
+]
 
 [tool.mypy]
 warn_unused_configs = true
@@ -81,3 +109,18 @@ module = [
     "arpeggio.*",
 ]
 ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-r s"
+
+[tool.ruff.lint]
+select = [
+    "E4", "E7", "E9", "F", # ruff defaults
+    "I", # isort
+    "UP", # pyupgrade
+    "RUF", # ruff
+]
+
+[tool.doc8]
+ignore-path = ["docs/_build", "docs/requirements.txt"]

@@ -1,4 +1,0 @@
-[flake8]
-extend-ignore=E203
-# Should aim for 80, but don't warn until 90.
-max-line-length = 90

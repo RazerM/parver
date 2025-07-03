@@ -280,7 +280,7 @@ class TestVersion:
     def test_version_str_repr(self, version, expected):
         v = Version.parse(version).normalize()
         assert str(v) == expected
-        assert repr(v) == f"<Version {repr(expected)}>"
+        assert repr(v) == f"<Version {expected!r}>"
 
     def test_version_rc_and_c_equals(self):
         assert Version.parse("1.0rc1") == Version.parse("1.0c1")
@@ -675,9 +675,8 @@ class TestVersion:
         # Below we'll generate every possible combination of VERSIONS that
         # should be True for the given operator
         itertools.chain(
-            *
             # Verify that the less than (<) operator works correctly
-            [
+            *[
                 [(x, y, operator.lt) for y in PARSED_VERSIONS[i + 1 :]]
                 for i, x in enumerate(PARSED_VERSIONS)
             ]
@@ -718,9 +717,8 @@ class TestVersion:
         # Below we'll generate every possible combination of VERSIONS that
         # should be False for the given operator
         itertools.chain(
-            *
             # Verify that the less than (<) operator works correctly
-            [
+            *[
                 [(x, y, operator.lt) for y in PARSED_VERSIONS[: i + 1]]
                 for i, x in enumerate(PARSED_VERSIONS)
             ]

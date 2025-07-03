@@ -26,7 +26,7 @@ def epoch():
 @composite
 def release(draw):
     return draw(
-        num_str.map(lambda s: [s] + draw(lists(num_str.map(lambda s: "." + s)))).map(
+        num_str.map(lambda s: [s, *draw(lists(num_str.map(lambda s: "." + s)))]).map(
             lambda parts: "".join(parts)
         )
     )
