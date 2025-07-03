@@ -6,16 +6,16 @@
    :target: https://parver.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
-.. image:: https://github.com/RazerM/parver/workflows/CI/badge.svg?branch=master
+.. image:: https://github.com/RazerM/parver/workflows/CI/badge.svg?branch=main
    :target: https://github.com/RazerM/parver/actions?workflow=CI
    :alt: CI Status
 
-.. image:: https://codecov.io/gh/RazerM/parver/branch/master/graph/badge.svg
+.. image:: https://codecov.io/gh/RazerM/parver/branch/main/graph/badge.svg
    :target: https://codecov.io/gh/RazerM/parver
    :alt: Test coverage
 
 .. image:: https://img.shields.io/github/license/RazerM/parver.svg
-   :target: https://raw.githubusercontent.com/RazerM/parver/master/LICENSE.txt
+   :target: https://raw.githubusercontent.com/RazerM/parver/main/LICENSE.txt
    :alt: MIT License
 
 parver
