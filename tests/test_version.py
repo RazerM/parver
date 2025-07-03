@@ -110,7 +110,8 @@ def test_init(vargs, s):
         dict(post_tag=None, post_sep2="."),
         dict(post_tag=None, post_sep1=".", post_sep2="."),
         dict(pre_tag="a"),
-        dict(dev=None, dev_sep="."),
+        dict(dev=None, dev_sep1="."),
+        dict(dev=None, dev_sep2="."),
         dict(dev=None, post_sep1="."),
         dict(dev=None, post_sep2="."),
     ],
@@ -167,7 +168,8 @@ def test_release_validation(release, exc, match):
         dict(pre_tag="a", pre_sep2="x"),
         dict(post=1, post_sep1="x"),
         dict(post=1, post_sep2="x"),
-        dict(dev=4, dev_sep="y"),
+        dict(dev=4, dev_sep1="y"),
+        dict(dev=4, dev_sep2="y"),
         dict(post_tag=None, post=1, post_sep1="."),
         dict(post_tag=None, post=1, post_sep2="."),
         dict(epoch=-1),
@@ -206,7 +208,8 @@ def test_validation_value(kwargs):
                 post_sep2=None,
                 dev=None,
                 dev_implicit=False,
-                dev_sep=None,
+                dev_sep1=None,
+                dev_sep2=None,
                 local=None,
             ),
             "1",
@@ -306,18 +309,23 @@ def test_validation_value(kwargs):
         ),
         (
             dict(dev=""),
-            dict(dev=0, dev_implicit=True, dev_sep="."),
+            dict(dev=0, dev_implicit=True, dev_sep1="."),
             "1.dev",
         ),
         (
             dict(dev=2),
-            dict(dev=2, dev_implicit=False, dev_sep="."),
+            dict(dev=2, dev_implicit=False, dev_sep1="."),
             "1.dev2",
         ),
         (
-            dict(dev=0, dev_sep="-"),
-            dict(dev=0, dev_implicit=False, dev_sep="-"),
+            dict(dev=0, dev_sep1="-"),
+            dict(dev=0, dev_implicit=False, dev_sep1="-"),
             "1-dev0",
+        ),
+        (
+            dict(dev=0, dev_sep2="-"),
+            dict(dev=0, dev_implicit=False, dev_sep1=".", dev_sep2="-"),
+            "1.dev-0",
         ),
         (
             dict(local="a.b"),
@@ -360,10 +368,11 @@ def test_replace_roundtrip(version):
                 post_tag="post",
                 post_sep1=".",
                 post_sep2=None,
-                dev_sep=".",
+                dev_sep1=".",
+                dev_sep2=".",
                 local=None,
             ),
-            "2.1a3.post4.dev5",
+            "2.1a3.post4.dev.5",
         ),
         (
             "2.1a3.post4.dev5",
@@ -377,10 +386,11 @@ def test_replace_roundtrip(version):
                 post_tag="rev",
                 post_sep1="_",
                 post_sep2=".",
-                dev_sep="_",
+                dev_sep1="_",
+                dev_sep2="-",
                 local="l.6",
             ),
-            "v0!1.2.alpha-3_rev.4_dev5+l.6",
+            "v0!1.2.alpha-3_rev.4_dev-5+l.6",
         ),
         (
             "2.post4",
@@ -401,6 +411,27 @@ def test_replace_roundtrip(version):
             "1.2",
             dict(pre=None, post=None, dev=None),
             "1.2",
+        ),
+        # Verify that the dot between post and dev is parsed as dev_sep1 and
+        # not post_sep2
+        (
+            "1.post.dev",
+            dict(post=None),
+            "1.dev",
+        ),
+        # Verify that the dot between pre and dev is parsed as dev_sep1 and
+        # not pre_sep2
+        (
+            "1.pre.dev",
+            dict(pre=None),
+            "1.dev",
+        ),
+        # Verify that the dot between pre and post is parsed as post_sep1 and
+        # not pre_sep2
+        (
+            "1.pre.post",
+            dict(pre=None),
+            "1.post",
         ),
     ],
 )
@@ -667,6 +698,10 @@ def test_is_release_candidate(version):
 def test_ambiguous():
     with pytest.raises(ValueError, match="post_tag.*pre"):
         Version(release=1, pre="", pre_tag="rc", post=2, post_tag=None)
+
+    v = Version(release=1, pre="", pre_tag="rc", pre_sep2=".", post=2, post_tag=None)
+    assert str(v) == "1rc.-2"
+    assert str(v.normalize()) == "1rc0.post2"
 
 
 @pytest.mark.parametrize(
