@@ -280,7 +280,7 @@ class TestVersion:
     def test_version_str_repr(self, version, expected):
         v = Version.parse(version).normalize()
         assert str(v) == expected
-        assert repr(v) == f"<Version {repr(expected)}>"
+        assert repr(v) == f"<Version {expected!r}>"
 
     def test_version_rc_and_c_equals(self):
         assert Version.parse("1.0rc1") == Version.parse("1.0c1")

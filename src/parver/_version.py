@@ -59,20 +59,12 @@ def implicit_or(
 
 def not_bool(inst: Any, attr: "Attribute[Any]", value: Any) -> None:
     if isinstance(value, bool):
-        raise TypeError(
-            "'{name}' must not be a bool (got {value!r})".format(
-                name=attr.name, value=value
-            )
-        )
+        raise TypeError(f"'{attr.name}' must not be a bool (got {value!r})")
 
 
 def is_non_negative(inst: Any, attr: "Attribute[Any]", value: Any) -> None:
     if value < 0:
-        raise ValueError(
-            "'{name}' must be non-negative (got {value!r})".format(
-                name=attr.name, value=value
-            )
-        )
+        raise ValueError(f"'{attr.name}' must be non-negative (got {value!r})")
 
 
 def non_empty(inst: Any, attr: "Attribute[Any]", value: Any) -> None:
@@ -952,8 +944,8 @@ class Version:
             # This is an error because different tags have different meanings
             if tag is not None and self.pre_tag != tag:
                 raise ValueError(
-                    "Cannot bump with pre_tag mismatch ({0} != {1}). Use "
-                    ".replace(pre_tag={1!r})".format(self.pre_tag, tag)
+                    f"Cannot bump with pre_tag mismatch ({self.pre_tag} != {tag}). "
+                    f"Use .replace(pre_tag={tag!r})"
                 )
             tag = self.pre_tag
 

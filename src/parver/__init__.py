@@ -1,7 +1,7 @@
 from ._parse import ParseError
 from ._version import Version
 
-__all__ = ("Version", "ParseError")
+__all__ = ("ParseError", "Version")
 
 from ._helpers import fixup_module_metadata
 
