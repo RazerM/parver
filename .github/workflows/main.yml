@@ -33,7 +33,7 @@ jobs:
         with:
           python-version: "${{ matrix.python-version }}"
           allow-prereleases: true
-      - uses: "astral-sh/setup-uv@557e51de59eb14aaaba2ed9621916900a91d50c6" # v6.6.1
+      - uses: "astral-sh/setup-uv@ed21f2f24f8dd64503750218de024bcf64c7250a" # v7.1.5
         with:
           enable-cache: true
       - name: "Install dependencies"
