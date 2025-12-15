@@ -696,7 +696,7 @@ def test_is_release_candidate(version):
 
 
 def test_ambiguous():
-    with pytest.raises(ValueError, match="post_tag.*pre"):
+    with pytest.raises(ValueError, match=r"post_tag.*pre"):
         Version(release=1, pre="", pre_tag="rc", post=2, post_tag=None)
 
     v = Version(release=1, pre="", pre_tag="rc", pre_sep2=".", post=2, post_tag=None)

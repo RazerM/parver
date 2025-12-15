@@ -38,7 +38,7 @@ dev = [
     "hypothesis>=6.135.24",
     "pretend>=1.0.9",
     "pytest>=8.4.1",
-    "ruff==0.12.2",
+    "ruff==0.14.9",
 ]
 docs = [
     "furo>=2024.8.6",
