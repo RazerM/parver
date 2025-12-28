@@ -1,7 +1,37 @@
-from ._parse import ParseError
-from ._version import Version
+from ._typing import ImplicitZero, Separator
+from ._version import (
+    ImplicitNumberError,
+    InvalidLocalError,
+    LeadingZerosError,
+    LocalEmptyError,
+    NoLeadingNumberError,
+    NonEmptyTuple,
+    ParseError,
+    StrictParseError,
+    StrictPreTagError,
+    StrictSegmentError,
+    UnexpectedInputError,
+    Version,
+    VPrefixNotAllowedError,
+)
 
-__all__ = ("ParseError", "Version")
+__all__ = (
+    "ImplicitNumberError",
+    "ImplicitZero",
+    "InvalidLocalError",
+    "LeadingZerosError",
+    "LocalEmptyError",
+    "NoLeadingNumberError",
+    "NonEmptyTuple",
+    "ParseError",
+    "Separator",
+    "StrictParseError",
+    "StrictPreTagError",
+    "StrictSegmentError",
+    "UnexpectedInputError",
+    "VPrefixNotAllowedError",
+    "Version",
+)
 
 from ._helpers import fixup_module_metadata
 
