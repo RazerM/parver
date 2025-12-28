@@ -7,7 +7,7 @@ name = "parver"
 version = "0.5"
 description = "Parse and manipulate version numbers."
 readme = "README.rst"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = "MIT"
 authors = [
     { name = "Frazer McLean", email = "frazer@frazermclean.co.uk" },
@@ -17,7 +17,6 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -27,18 +26,14 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
-    "arpeggio>=2.0.2",
-    "attrs>=25.3.0",
-    "typing-extensions>=4.14.0; python_version<'3.10'",
+    "typing-extensions>=4.14.0; python_full_version<'3.11'",
 ]
 
 [dependency-groups]
 dev = [
     { include-group = "coverage" },
     { include-group = "nox" },
-    "hypothesis>=6.135.24",
-    "pretend>=1.0.9",
-    "pytest>=8.4.1",
+    { include-group = "test" },
     "ruff==0.15.13",
 ]
 docs = [
@@ -50,10 +45,16 @@ docstest = [
     "doc8>=1.1.2",
 ]
 coverage = [
-    "coverage[toml]>=7.9.2",
+    "coverage[toml]>=7.13.5",
 ]
 nox = [
     "nox>=2025.5.1",
+]
+test = [
+    "hypothesis>=6.135.24",
+    "pretend>=1.0.9",
+    "pytest>=8.4.1",
+    "pytest-xdist>=3.8.0",
 ]
 typing = [
     "mypy>=1.16.1",
@@ -74,21 +75,19 @@ branch = true
 relative_files = true
 source = ["parver", "tests/"]
 parallel = true
+patch = ["subprocess"]
 
 [tool.coverage.paths]
 source = ["src/parver", ".nox/**/site-packages/parver"]
 
 [tool.coverage.report]
 precision = 1
-exclude_lines = [
-    "pragma: no cover",
+exclude_also = [
     '^\s*pass$',
     '^\s*raise NotImplementedError\b',
     '^\s*return NotImplemented\b',
     '^\s*raise$',
-    '^\s*\.\.\.$',
-    '^\s*if (typing\.)?TYPE_CHECKING:',
-    '^\s*(typing\.)?assert_never\('
+    '^\s*(case _:\n\s*)?(typing\.)?assert_never\(',
 ]
 
 [tool.mypy]
@@ -105,15 +104,9 @@ warn_unused_ignores = true
 warn_return_any = true
 no_implicit_reexport = true
 
-[[tool.mypy.overrides]]
-module = [
-    "arpeggio.*",
-]
-ignore_missing_imports = true
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-r s"
+addopts = "-r s --numprocesses=auto --dist=worksteal --maxprocesses=6"
 
 [tool.ruff.lint]
 select = [

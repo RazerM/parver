@@ -1,5 +1,4 @@
-from ._parse import ParseError
-from ._version import Version
+from ._version import ParseError, Version
 
 __all__ = ("ParseError", "Version")
 

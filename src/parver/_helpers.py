@@ -1,6 +1,6 @@
 from collections import deque
 from collections.abc import Iterable
-from typing import Any, TypeVar, Union, cast, overload
+from typing import Any, TypeVar, cast, overload
 
 from ._typing import ImplicitZero
 
@@ -95,16 +95,14 @@ def fixup_module_metadata(module_name: str, namespace: dict[str, Any]) -> None:
 
 
 @overload
-def last(iterable: Iterable[T]) -> T:
-    pass
+def last(iterable: Iterable[T]) -> T: ...
 
 
 @overload
-def last(iterable: Iterable[T], *, default: T) -> T:
-    pass
+def last(iterable: Iterable[T], *, default: T) -> T: ...
 
 
-def last(iterable: Iterable[T], *, default: Union[UnsetType, T] = UNSET) -> T:
+def last(iterable: Iterable[T], *, default: UnsetType | T = UNSET) -> T:
     try:
         return deque(iterable, maxlen=1).pop()
     except IndexError:
