@@ -17,7 +17,7 @@ jobs:
       attestations: write
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-      - uses: "astral-sh/setup-uv@681c641aba71e4a1c380be3ab5e12ad51f415867" # v7.1.6
+      - uses: "astral-sh/setup-uv@61cb8a9741eeb8a550a1b8544337180c0fc8476b" # v7.2.0
         with:
           enable-cache: true
       - name: Set up Python
