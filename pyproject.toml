@@ -77,6 +77,7 @@ relative_files = true
 source = ["parver", "tests/"]
 parallel = true
 patch = ["subprocess"]
+disable_warnings = ["module-not-imported"]
 
 [tool.coverage.paths]
 source = ["src/parver", ".nox/**/site-packages/parver"]
