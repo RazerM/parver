@@ -34,30 +34,31 @@ dev = [
     { include-group = "coverage" },
     { include-group = "nox" },
     { include-group = "test" },
+    { include-group = "typing" },
     "ruff==0.15.13",
 ]
 docs = [
-    "furo>=2024.8.6",
-    "sphinx>=7.4.7",
+    "furo>=2025.12.19",
+    "sphinx>=8.1.3",
 ]
 docstest = [
     { include-group = "docs" },
-    "doc8>=1.1.2",
+    "doc8>=2.0.0",
 ]
 coverage = [
-    "coverage[toml]>=7.13.5",
+    "coverage[toml]>=7.14.0",
 ]
 nox = [
-    "nox>=2025.5.1",
+    "nox>=2026.4.10",
 ]
 test = [
-    "hypothesis>=6.135.24",
+    "hypothesis>=6.152.7",
     "pretend>=1.0.9",
-    "pytest>=8.4.1",
+    "pytest>=9.0.3",
     "pytest-xdist>=3.8.0",
 ]
 typing = [
-    "mypy>=1.16.1",
+    "mypy>=2.1.0",
 ]
 
 [project.urls]
@@ -104,9 +105,9 @@ warn_unused_ignores = true
 warn_return_any = true
 no_implicit_reexport = true
 
-[tool.pytest.ini_options]
+[tool.pytest]
 testpaths = ["tests"]
-addopts = "-r s --numprocesses=auto --dist=worksteal --maxprocesses=6"
+addopts = ["-r", "s", "--numprocesses=auto", "--dist=worksteal", "--maxprocesses=6"]
 
 [tool.ruff.lint]
 select = [

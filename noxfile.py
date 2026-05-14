@@ -12,14 +12,7 @@ PYTHON_VERSIONS = nox.project.python_versions(PYPROJECT)
 
 @nox.session(python="3.13")
 def docs(session: nox.Session) -> None:
-    session.run_install(
-        "uv",
-        "sync",
-        "--no-default-groups",
-        "--group=docstest",
-        f"--python={session.virtualenv.location}",
-        env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
-    )
+    session.run_install("uv", "sync", "--no-default-groups", "--group=docstest")
 
     temp_dir = session.create_tmp()
     session.run(
@@ -37,14 +30,7 @@ def docs(session: nox.Session) -> None:
 
 @nox.session(python="3.13")
 def typing(session: nox.Session) -> None:
-    session.run_install(
-        "uv",
-        "sync",
-        "--no-default-groups",
-        "--group=typing",
-        f"--python={session.virtualenv.location}",
-        env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
-    )
+    session.run_install("uv", "sync", "--no-default-groups", "--group=typing")
     session.run("mypy", "src/parver")
 
 
@@ -56,8 +42,6 @@ def tests(session: nox.Session) -> None:
         "--no-default-groups",
         "--group=coverage",
         "--group=test",
-        f"--python={session.virtualenv.location}",
-        env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
     )
 
     session.run(
@@ -78,8 +62,6 @@ def test_min_deps(session: nox.Session) -> None:
             "--no-default-groups",
             "--group=test",
             "--resolution=lowest-direct",
-            f"--python={session.virtualenv.location}",
-            env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
         )
 
         session.run("pytest", *session.posargs)
@@ -93,18 +75,8 @@ def test_latest(session: nox.Session) -> None:
         "--no-default-groups",
         "--group=test",
         "--no-install-project",
-        f"--python={session.virtualenv.location}",
-        env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
     )
-    session.run_install(
-        "uv",
-        "pip",
-        "install",
-        "--upgrade",
-        ".",
-        f"--python={session.virtualenv.location}",
-        env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
-    )
+    session.run_install("uv", "pip", "install", "--upgrade", ".")
 
     session.run("pytest", *session.posargs)
 
