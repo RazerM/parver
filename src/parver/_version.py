@@ -34,10 +34,12 @@ _local_version_separators = re.compile(r"[._-]")
 def check_by(by: int, current: int | None) -> None:
     """Validate the 'by' parameter for bump methods."""
     if not isinstance(by, int):
-        raise TypeError("by must be an integer")
+        msg = "by must be an integer"
+        raise TypeError(msg)
 
     if current is None and by < 0:
-        raise ValueError("Cannot bump by negative amount when current value is unset.")
+        msg = "Cannot bump by negative amount when current value is unset."
+        raise ValueError(msg)
 
 
 def _normalize_pre_tag(pre_tag: str | None) -> NormalizedPreTag | None:
@@ -476,23 +478,29 @@ def _validate_numeric_component(
         else _nicepath(path)
     )
     if isinstance(value, bool):
-        raise TypeError(f"{name} must not be a bool (got {value!r})")
+        msg = f"{name} must not be a bool (got {value!r})"
+        raise TypeError(msg)
     if not isinstance(value, int):
-        raise TypeError(f"{name} must be an integer (got {value!r})")
+        msg = f"{name} must be an integer (got {value!r})"
+        raise TypeError(msg)
     if value < 0:
-        raise ValueError(f"{name} must be non-negative (got {value!r})")
+        msg = f"{name} must be non-negative (got {value!r})"
+        raise ValueError(msg)
 
 
 def _validate_separator(name: str, value: Any) -> None:
     if value not in SEPARATOR:
-        raise ValueError(f"{name} must be one of {SEPARATOR!r} (got {value!r})")
+        msg = f"{name} must be one of {SEPARATOR!r} (got {value!r})"
+        raise ValueError(msg)
 
 
 def _validate_tag(name: str, value: str, allowed: tuple[str, ...]) -> None:
     if not isinstance(value, str):
-        raise TypeError(f"{name} must be a string (got {value!r})")
+        msg = f"{name} must be a string (got {value!r})"
+        raise TypeError(msg)
     if value.lower() not in allowed:
-        raise ValueError(f"{name} must be one of {allowed!r} (got {value!r})")
+        msg = f"{name} must be one of {allowed!r} (got {value!r})"
+        raise ValueError(msg)
 
 
 def _validate_pre_tag(value: str) -> None:
@@ -724,11 +732,13 @@ class Version:
 
     def __setattr__(self, name: str, value: object) -> None:
         if getattr(self, "_frozen", False):
-            raise AttributeError(f"{type(self).__name__} is immutable")
+            msg = f"{type(self).__name__} is immutable"
+            raise AttributeError(msg)
         super().__setattr__(name, value)
 
     def __delattr__(self, name: str) -> None:
-        raise AttributeError(f"{type(self).__name__} is immutable")
+        msg = f"{type(self).__name__} is immutable"
+        raise AttributeError(msg)
 
     def __setstate__(self, state: tuple[None, dict[str, Any]]) -> None:
         _, slots = state
@@ -764,7 +774,8 @@ class Version:
             case "v" | "V" | None:
                 self.v = v
             case _:
-                raise TypeError("v must be 'v', 'V', bool, or None")
+                msg = "v must be 'v', 'V', bool, or None"
+                raise TypeError(msg)
         _validate_numeric_component("epoch", epoch, allow_implicit=True)
         if epoch == IMPLICIT_ZERO:
             self.epoch = 0
@@ -777,13 +788,13 @@ class Version:
         elif isinstance(release, int):
             release = (release,)
         if not isinstance(release, tuple):
-            raise TypeError(
-                f"release must be an int or iterable of ints (got {release!r})"
-            )
+            msg = f"release must be an int or iterable of ints (got {release!r})"
+            raise TypeError(msg)
         for i, number in enumerate(release):
             _validate_numeric_component(("release", i), number)
         if not release:
-            raise ValueError("'release' cannot be empty")
+            msg = "'release' cannot be empty"
+            raise ValueError(msg)
         self.release = release
         if pre is not None:
             _validate_numeric_component("pre", pre, allow_implicit=True)
@@ -793,13 +804,16 @@ class Version:
             _validate_separator("pre_sep2", pre_sep2)
         if pre_tag is None:
             if pre is not None:
-                raise ValueError("Must set pre_tag if pre is given.")
+                msg = "Must set pre_tag if pre is given."
+                raise ValueError(msg)
             if pre_sep1 is not None or pre_sep2 is not None:
-                raise ValueError("Cannot set pre_sep1 or pre_sep2 without pre_tag.")
+                msg = "Cannot set pre_sep1 or pre_sep2 without pre_tag."
+                raise ValueError(msg)
         else:
             _validate_pre_tag(pre_tag)
             if pre is None:
-                raise ValueError("Must set pre if pre_tag is given.")
+                msg = "Must set pre if pre_tag is given."
+                raise ValueError(msg)
         self.pre_tag = pre_tag
 
         if pre == IMPLICIT_ZERO:
@@ -825,7 +839,8 @@ class Version:
 
         # post_tag relies on post
         if got_post_tag and not got_post:
-            raise ValueError("Must set post if post_tag is given.")
+            msg = "Must set post if post_tag is given."
+            raise ValueError(msg)
 
         if got_post:
             if not got_post_tag:
@@ -845,27 +860,31 @@ class Version:
         # An implicit post-release is e.g. '1-2' (== '1.post2')
         if post_tag is None:
             if self.post_implicit:
-                raise ValueError(
+                msg = (
                     "Implicit post releases (post_tag=None) require a numerical "
                     "value for 'post' argument."
                 )
+                raise ValueError(msg)
 
             if got_post_sep1 or got_post_sep2:
-                raise ValueError(
+                msg = (
                     "post_sep1 and post_sep2 cannot be set for implicit post "
                     "releases (post_tag=None)"
                 )
+                raise ValueError(msg)
 
             if self.pre_implicit and self.pre_sep2 is None:
-                raise ValueError(
+                msg = (
                     "post_tag cannot be None with an implicit pre-release "
                     "(pre='') unless pre_sep2 is not None."
                 )
+                raise ValueError(msg)
 
             self.post_sep1 = "-"
         elif post_tag is UNSET:
             if got_post_sep1 or got_post_sep2:
-                raise ValueError("Cannot set post_sep1 or post_sep2 without post_tag.")
+                msg = "Cannot set post_sep1 or post_sep2 without post_tag."
+                raise ValueError(msg)
 
             post_tag = None
             self.post_sep1 = None if self.post is None else "."
@@ -912,9 +931,11 @@ class Version:
             self.dev_implicit = False
             self.dev = None
             if got_dev_sep1:
-                raise ValueError("Cannot set dev_sep1 without dev.")
+                msg = "Cannot set dev_sep1 without dev."
+                raise ValueError(msg)
             if got_dev_sep2:
-                raise ValueError("Cannot set dev_sep2 without dev.")
+                msg = "Cannot set dev_sep2 without dev."
+                raise ValueError(msg)
 
         if self.dev is not None and not got_dev_tag:
             dev_tag = "dev"
@@ -936,7 +957,8 @@ class Version:
         self.dev_tag = dev_tag
 
         if local is not None and not isinstance(local, str):
-            raise TypeError(f"local must be a string (got {local!r})")
+            msg = f"local must be a string (got {local!r})"
+            raise TypeError(msg)
         self.local = local
 
         # Compute comparison key
@@ -1208,10 +1230,12 @@ class Version:
     ) -> Version:
         """Helper method for release-related bump operations."""
         if not isinstance(index, int):
-            raise TypeError("index must be an integer")
+            msg = "index must be an integer"
+            raise TypeError(msg)
 
         if index < 0:
-            raise ValueError("index cannot be negative")
+            msg = "index cannot be negative"
+            raise ValueError(msg)
 
         release = list(self.release)
         new_len = index + 1
@@ -1359,14 +1383,16 @@ class Version:
 
         if self.pre_tag is None:
             if tag is None:
-                raise ValueError("Cannot bump without pre_tag. Use .bump_pre('<tag>')")
+                msg = "Cannot bump without pre_tag. Use .bump_pre('<tag>')"
+                raise ValueError(msg)
         else:
             # This is an error because different tags have different meanings
             if tag is not None and self.pre_tag.lower() != tag.lower():
-                raise ValueError(
+                msg = (
                     f"Cannot bump with pre_tag mismatch ({self.pre_tag} != {tag}). "
                     f"Use .replace(pre_tag={tag!r})"
                 )
+                raise ValueError(msg)
             tag = self.pre_tag
 
         return self.replace(pre=pre, pre_tag=tag)
@@ -1509,10 +1535,12 @@ class Version:
         <Version '2.0'>
         """
         if not isinstance(min_length, int):
-            raise TypeError("min_length must be an integer")
+            msg = "min_length must be an integer"
+            raise TypeError(msg)
 
         if min_length < 1:
-            raise ValueError("min_length must be positive")
+            msg = "min_length must be positive"
+            raise ValueError(msg)
 
         release = list(self.release)
         if len(release) < min_length:

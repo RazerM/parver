@@ -24,9 +24,11 @@ class ReleaseInt(int):
     def __new__(cls, value: int | str, *, width: int | None = None) -> Self:
         if width is not None:
             if isinstance(width, bool) or not isinstance(width, int):
-                raise TypeError("width must be an integer")
+                msg = "width must be an integer"
+                raise TypeError(msg)
             if width < 1:
-                raise ValueError("width must be positive")
+                msg = "width must be positive"
+                raise ValueError(msg)
 
         if isinstance(value, str):
             parsed_value = int(value)
@@ -39,7 +41,8 @@ class ReleaseInt(int):
             obj = super().__new__(cls, value)
             obj._minimum_width = 1 if width is None else width
         else:
-            raise TypeError(f"Unsupported type: {type(value)}")
+            msg = f"Unsupported type: {type(value)}"
+            raise TypeError(msg)
         return obj
 
     @property

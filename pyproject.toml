@@ -117,6 +117,7 @@ select = [
     "UP", # pyupgrade
     "RUF", # ruff
     "TC005", "TC006", "TC007", "TC010", # flake8-type-checking
+    "EM", # flake8-errmsg
 ]
 
 [tool.doc8]
