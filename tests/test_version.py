@@ -1,7 +1,10 @@
+import pickle
+
 import pytest
 from hypothesis import HealthCheck, given, settings
 
 from parver import Version
+from parver._helpers import IMPLICIT_ZERO
 
 from .strategies import version_strategy
 
@@ -13,11 +16,14 @@ def v(*args, **kwargs):
 @pytest.mark.parametrize(
     "vargs, s",
     [
-        (v(1), "1"),
+        (v(release=1), "1"),
         (v(release=(1,)), "1"),
         (v(release=(1, 2)), "1.2"),
+        # v
+        (v(release=1, v=True), "v1"),
+        (v(release=1, v=False), "1"),
         # epoch
-        (v(release=1, epoch=""), "1"),
+        (v(release=1, epoch=IMPLICIT_ZERO), "1"),
         (v(release=1, epoch=0), "0!1"),
         (v(release=1, epoch=1), "1!1"),
         (v(release=1, pre_tag=None), "1"),
@@ -128,10 +134,12 @@ def test_invalid(kwargs):
         dict(release="1"),
         dict(v=3),
         dict(post=True),
+        dict(post=1, post_tag=1),
         dict(epoch="1"),
         dict(pre_tag="b", pre="2"),
         dict(post="3"),
         dict(dev="3"),
+        dict(dev=1, dev_tag=1),
         dict(local=[1, "abc"]),
         dict(local=1),
     ],
@@ -166,8 +174,10 @@ def test_release_validation(release, exc, match):
         dict(pre_tag="alph"),
         dict(pre_tag="a", pre_sep1="x"),
         dict(pre_tag="a", pre_sep2="x"),
+        dict(post=1, post_tag="foo"),
         dict(post=1, post_sep1="x"),
         dict(post=1, post_sep2="x"),
+        dict(dev=4, dev_tag="foo"),
         dict(dev=4, dev_sep1="y"),
         dict(dev=4, dev_sep2="y"),
         dict(post_tag=None, post=1, post_sep1="."),
@@ -193,7 +203,7 @@ def test_validation_value(kwargs):
             dict(release=1),
             dict(
                 release=(1,),
-                v=False,
+                v=None,
                 epoch=0,
                 epoch_implicit=True,
                 pre_tag=None,
@@ -344,6 +354,33 @@ def test_attributes(kwargs, values, version):
         assert getattr(v, key) == value, key
 
 
+def test_version_is_immutable():
+    version = Version.parse("1")
+
+    with pytest.raises(AttributeError, match="immutable"):
+        version.release = (2,)
+
+    with pytest.raises(AttributeError, match="immutable"):
+        version._key = ()
+
+    with pytest.raises(AttributeError, match="immutable"):
+        version.extra = 1
+
+    with pytest.raises(AttributeError, match="immutable"):
+        del version.release
+
+
+def test_version_roundtrips_with_pickle():
+    version = Version.parse("v1.02.DEV3+LOCAL")
+
+    reloaded = pickle.loads(pickle.dumps(version))
+
+    assert reloaded == version
+    assert str(reloaded) == str(version)
+    with pytest.raises(AttributeError, match="immutable"):
+        reloaded.release = (2,)
+
+
 @given(version_strategy())
 @settings(suppress_health_check=[HealthCheck.too_slow])
 def test_replace_roundtrip(version):
@@ -360,8 +397,8 @@ def test_replace_roundtrip(version):
             "v0!1.2.alpha-3_rev.4_dev5+l.6",
             dict(
                 release=(2, 1),
-                epoch="",
-                v=False,
+                epoch=IMPLICIT_ZERO,
+                v=None,
                 pre_tag="a",
                 pre_sep1=None,
                 pre_sep2=None,
@@ -379,7 +416,7 @@ def test_replace_roundtrip(version):
             dict(
                 release=(1, 2),
                 epoch=0,
-                v=True,
+                v="v",
                 pre_tag="alpha",
                 pre_sep1=".",
                 pre_sep2="-",
@@ -451,10 +488,46 @@ def test_replace(before, kwargs, after):
         ("1.1", 2, "1.1.1"),
         ("1.1", 3, "1.1.0.1"),
         ("4.3.2.1", 2, "4.3.3.0"),
+        ("2026.04.09", 0, "2027.00.00"),
+        ("2026.04.09", 1, "2026.05.00"),
     ],
 )
 def test_bump_release(before, index, after):
     assert str(Version.parse(before).bump_release(index=index)) == after
+
+
+def test_bump_release_resets_plain_int_tail_to_plain_zero():
+    version = Version(release=(1, 2)).bump_release(index=0)
+
+    assert str(version) == "2.0"
+    assert version.release == (2, 0)
+    assert type(version.release[1]) is int
+
+
+@pytest.mark.parametrize(
+    ("before", "expected"),
+    [
+        ("1.09", "2.00"),
+        ("1.9", "2.0"),
+    ],
+)
+def test_bump_release_preserves_padded_width_preference_across_operations(
+    before, expected
+):
+    version = Version.parse(before).bump_release(index=1).bump_release(index=0)
+    assert str(version) == expected
+
+
+@pytest.mark.parametrize(
+    ("before", "index", "width", "after"),
+    [
+        ("1.4", 1, 2, "1.05"),
+        ("1", 1, 2, "1.01"),
+    ],
+)
+def test_bump_release_width(before, index, width, after):
+    version = Version.parse(before).bump_release(index=index, width=width)
+    assert str(version) == after
 
 
 @pytest.mark.parametrize(
@@ -474,10 +547,24 @@ def test_bump_release(before, index, after):
         ("2017.4", 0, 2018, "2018.0"),
         ("17.5.1", 0, 18, "18.0.0"),
         ("18.0.0", 1, 2, "18.2.0"),
+        ("2026.04.09", 0, 2027, "2027.00.00"),
+        ("2026.04.09", 1, 5, "2026.05.00"),
     ],
 )
 def test_bump_release_to(before, index, value, after):
     v = Version.parse(before).bump_release_to(index=index, value=value)
+    assert str(v) == after
+
+
+@pytest.mark.parametrize(
+    ("before", "index", "value", "width", "after"),
+    [
+        ("2025.04", 1, 5, 2, "2025.05"),
+        ("2025", 1, 5, 2, "2025.05"),
+    ],
+)
+def test_bump_release_to_width(before, index, value, width, after):
+    v = Version.parse(before).bump_release_to(index=index, value=value, width=width)
     assert str(v) == after
 
 
@@ -572,6 +659,17 @@ def test_bump_pre(before, tag, kwargs, after):
 
 
 @pytest.mark.parametrize(
+    ("before", "tag", "kwargs", "after"),
+    [
+        ("1", "a", dict(width=2), "1a00"),
+        ("1a04", None, dict(width=1), "1a5"),
+    ],
+)
+def test_bump_pre_width(before, tag, kwargs, after):
+    assert str(Version.parse(before).bump_pre(tag, **kwargs)) == after
+
+
+@pytest.mark.parametrize(
     "version, tag",
     [
         ("1.2", None),
@@ -601,6 +699,17 @@ def test_bump_post(before, kwargs, after):
 
 
 @pytest.mark.parametrize(
+    ("before", "kwargs", "after"),
+    [
+        ("1", dict(width=2), "1.post00"),
+        ("1.post04", dict(width=1), "1.post5"),
+    ],
+)
+def test_bump_post_width(before, kwargs, after):
+    assert str(Version.parse(before).bump_post(**kwargs)) == after
+
+
+@pytest.mark.parametrize(
     "before, kwargs, after",
     [
         ("1", dict(), "1.dev0"),
@@ -611,6 +720,17 @@ def test_bump_post(before, kwargs, after):
     ],
 )
 def test_bump_dev(before, kwargs, after):
+    assert str(Version.parse(before).bump_dev(**kwargs)) == after
+
+
+@pytest.mark.parametrize(
+    ("before", "kwargs", "after"),
+    [
+        ("1", dict(width=2), "1.dev00"),
+        ("1.dev04", dict(width=1), "1.dev5"),
+    ],
+)
+def test_bump_dev_width(before, kwargs, after):
     assert str(Version.parse(before).bump_dev(**kwargs)) == after
 
 
@@ -626,6 +746,17 @@ def test_bump_dev(before, kwargs, after):
     ],
 )
 def test_bump_epoch(before, kwargs, after):
+    assert str(Version.parse(before).bump_epoch(**kwargs)) == after
+
+
+@pytest.mark.parametrize(
+    ("before", "kwargs", "after"),
+    [
+        ("2", dict(width=2), "01!2"),
+        ("04!2", dict(width=1), "5!2"),
+    ],
+)
+def test_bump_epoch_width(before, kwargs, after):
     assert str(Version.parse(before).bump_epoch(**kwargs)) == after
 
 

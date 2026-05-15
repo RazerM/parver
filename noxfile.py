@@ -6,19 +6,13 @@ import nox
 nox.options.reuse_existing_virtualenvs = True
 nox.options.default_venv_backend = "uv"
 
-python_versions = ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+PYPROJECT = nox.project.load_toml("pyproject.toml")
+PYTHON_VERSIONS = nox.project.python_versions(PYPROJECT)
 
 
 @nox.session(python="3.13")
 def docs(session: nox.Session) -> None:
-    session.run_install(
-        "uv",
-        "sync",
-        "--no-dev",
-        "--group=docstest",
-        f"--python={session.virtualenv.location}",
-        env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
-    )
+    session.run_install("uv", "sync", "--no-default-groups", "--group=docstest")
 
     temp_dir = session.create_tmp()
     session.run(
@@ -36,23 +30,18 @@ def docs(session: nox.Session) -> None:
 
 @nox.session(python="3.13")
 def typing(session: nox.Session) -> None:
-    session.run_install(
-        "uv",
-        "sync",
-        "--group=typing",
-        f"--python={session.virtualenv.location}",
-        env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
-    )
+    session.run_install("uv", "sync", "--no-default-groups", "--group=typing")
     session.run("mypy", "src/parver")
 
 
-@nox.session(python=python_versions)
+@nox.session(python=PYTHON_VERSIONS)
 def tests(session: nox.Session) -> None:
     session.run_install(
         "uv",
         "sync",
-        f"--python={session.virtualenv.location}",
-        env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
+        "--no-default-groups",
+        "--group=coverage",
+        "--group=test",
     )
 
     session.run(
@@ -64,38 +53,30 @@ def tests(session: nox.Session) -> None:
     )
 
 
-@nox.session(name="test-min-deps", python=python_versions)
+@nox.session(name="test-min-deps", python=PYTHON_VERSIONS)
 def test_min_deps(session: nox.Session) -> None:
     with restore_file("uv.lock"):
         session.run_install(
             "uv",
             "sync",
+            "--no-default-groups",
+            "--group=test",
             "--resolution=lowest-direct",
-            f"--python={session.virtualenv.location}",
-            env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
         )
 
         session.run("pytest", *session.posargs)
 
 
-@nox.session(name="test-latest", python=python_versions)
+@nox.session(name="test-latest", python=PYTHON_VERSIONS)
 def test_latest(session: nox.Session) -> None:
     session.run_install(
         "uv",
         "sync",
+        "--no-default-groups",
+        "--group=test",
         "--no-install-project",
-        f"--python={session.virtualenv.location}",
-        env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
     )
-    session.run_install(
-        "uv",
-        "pip",
-        "install",
-        "--upgrade",
-        ".",
-        f"--python={session.virtualenv.location}",
-        env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
-    )
+    session.run_install("uv", "pip", "install", "--upgrade", ".")
 
     session.run("pytest", *session.posargs)
 
