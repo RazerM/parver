@@ -22,6 +22,7 @@ extensions = [
     "sphinx.ext.doctest",
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
+    "sphinx_inline_tabs",
 ]
 
 templates_path = ["_templates"]
