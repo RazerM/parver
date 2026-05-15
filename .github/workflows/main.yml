@@ -16,6 +16,16 @@ env:
   UV_PYTHON_DOWNLOADS: "false"
 
 jobs:
+  pre-commit:
+    name: "pre-commit"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: "j178/prek-action@bdca6f102f98e2b4c7029491a53dfd366469e33d" # v2.0.4
+
   tests:
     name: "Python ${{ matrix.python-version }}"
     runs-on: "ubuntu-latest"
@@ -51,3 +61,18 @@ jobs:
         with:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
+
+  required:
+    name: "all required checks passed"
+    runs-on: "ubuntu-latest"
+    if: always()
+
+    needs:
+      - pre-commit
+      - tests
+
+    steps:
+      - name: Decide whether the needed jobs succeeded or failed
+        uses: re-actors/alls-green@05ac9388f0aebcb5727afa17fcccfecd6f8ec5fe # v1.2.2
+        with:
+          jobs: ${{ toJSON(needs) }}
