@@ -1,3 +1,4 @@
+import os
 from collections import deque
 from collections.abc import Iterable
 from typing import Any, TypeVar, cast, overload
@@ -79,8 +80,13 @@ class NegativeInfinityType:
 
 NegativeInfinity = NegativeInfinityType()
 
+SPHINX_BUILD = os.environ.get("PARVER_SPHINX_BUILD")
+
 
 def fixup_module_metadata(module_name: str, namespace: dict[str, Any]) -> None:
+    if SPHINX_BUILD:  # pragma: no cover
+        return
+
     def fix_one(obj: Any) -> None:
         mod = getattr(obj, "__module__", None)
         if mod is not None and mod.startswith("parver."):

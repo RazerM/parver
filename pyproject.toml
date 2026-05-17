@@ -37,7 +37,8 @@ dev = [
 ]
 docs = [
     "furo>=2025.12.19",
-    "sphinx>=8.1.3",
+    "sphinx>=9.1.0",
+    "sphinx-autodoc-typehints>=3.10.2",
     "sphinx-inline-tabs>=2025.12.21.14",
 ]
 docstest = [
@@ -64,6 +65,13 @@ typing = [
 [project.urls]
 Documentation = "https://parver.readthedocs.io"
 "Source Code" = "https://github.com/RazerM/parver"
+
+[tool.uv.dependency-groups]
+docs = { requires-python = ">=3.12" }
+
+[tool.uv.sources]
+# https://github.com/tox-dev/sphinx-autodoc-typehints/pull/696
+sphinx-autodoc-typehints = { git = "https://github.com/tox-dev/sphinx-autodoc-typehints" }
 
 [tool.setuptools]
 package-dir = { "" = "src" }
