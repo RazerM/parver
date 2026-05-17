@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import sys
 from math import floor, log10
+from typing import TYPE_CHECKING
 
-if sys.version_info >= (3, 11):
-    from typing import Self
-else:
-    from typing_extensions import Self
+if TYPE_CHECKING:
+    if sys.version_info >= (3, 11):
+        from typing import Self
+    else:
+        from typing_extensions import Self
 
 
 def intwidth(value: int | str) -> int:

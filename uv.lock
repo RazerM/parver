@@ -786,9 +786,6 @@ wheels = [
 name = "parver"
 version = "0.5"
 source = { editable = "." }
-dependencies = [
-    { name = "typing-extensions", marker = "python_full_version < '3.11'" },
-]
 
 [package.dev-dependencies]
 coverage = [
@@ -803,6 +800,7 @@ dev = [
     { name = "pytest" },
     { name = "pytest-xdist" },
     { name = "ruff" },
+    { name = "typing-extensions", marker = "python_full_version < '3.11'" },
 ]
 docs = [
     { name = "furo" },
@@ -830,10 +828,10 @@ test = [
 ]
 typing = [
     { name = "mypy" },
+    { name = "typing-extensions", marker = "python_full_version < '3.11'" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "typing-extensions", marker = "python_full_version < '3.11'", specifier = ">=4.14.0" }]
 
 [package.metadata.requires-dev]
 coverage = [{ name = "coverage", extras = ["toml"], specifier = ">=7.14.0" }]
@@ -846,6 +844,7 @@ dev = [
     { name = "pytest", specifier = ">=9.0.3" },
     { name = "pytest-xdist", specifier = ">=3.8.0" },
     { name = "ruff", specifier = "==0.15.13" },
+    { name = "typing-extensions", marker = "python_full_version < '3.11'", specifier = ">=4.14.0" },
 ]
 docs = [
     { name = "furo", specifier = ">=2025.12.19" },
@@ -865,7 +864,10 @@ test = [
     { name = "pytest", specifier = ">=9.0.3" },
     { name = "pytest-xdist", specifier = ">=3.8.0" },
 ]
-typing = [{ name = "mypy", specifier = ">=2.1.0" }]
+typing = [
+    { name = "mypy", specifier = ">=2.1.0" },
+    { name = "typing-extensions", marker = "python_full_version < '3.11'", specifier = ">=4.14.0" },
+]
 
 [[package]]
 name = "pathspec"

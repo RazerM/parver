@@ -7,16 +7,17 @@ import sys
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Any, Literal, TypeAlias, TypeVar, cast, overload
+from typing import TYPE_CHECKING, Any, Literal, TypeAlias, TypeVar, cast, overload
 
 from ._helpers import IMPLICIT_ZERO, UNSET, Infinity, UnsetType, last
 from ._release_int import ReleaseInt
 from ._typing import ImplicitZero, NormalizedPreTag, Separator
 
-if sys.version_info >= (3, 11):
-    from typing import Unpack
-else:
-    from typing_extensions import Unpack
+if TYPE_CHECKING:
+    if sys.version_info >= (3, 11):
+        from typing import Unpack
+    else:
+        from typing_extensions import Unpack
 
 PRE_TAG: tuple[str, ...] = ("alpha", "beta", "preview", "pre", "rc", "a", "b", "c")
 PRE_TAG_STRICT: tuple[str, ...] = ("a", "b", "rc")
@@ -446,8 +447,8 @@ class InvalidLocalError(StrictParseError):
         return cls.__new__, (cls, *self.args), self.__dict__
 
 
-KeyPath: TypeAlias = str | tuple[str, Unpack[tuple[str | int, ...]]]
-NonEmptyTuple: TypeAlias = tuple[T, Unpack[tuple[T, ...]]]
+KeyPath: TypeAlias = "str | tuple[str, Unpack[tuple[str | int, ...]]]"
+NonEmptyTuple: TypeAlias = "tuple[T, Unpack[tuple[T, ...]]]"
 
 
 def _nicepath(path: KeyPath) -> str:
