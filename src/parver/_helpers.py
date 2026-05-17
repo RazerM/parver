@@ -110,7 +110,7 @@ def last(iterable: Iterable[T], *, default: Union[UnsetType, T] = UNSET) -> T:
     except IndexError:
         if default is UNSET:
             raise
-        return cast(T, default)
+        return cast("T", default)
 
 
 IMPLICIT_ZERO: ImplicitZero = ""
