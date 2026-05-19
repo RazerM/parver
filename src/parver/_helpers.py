@@ -1,6 +1,7 @@
+import os
 from collections import deque
 from collections.abc import Iterable
-from typing import Any, TypeVar, Union, cast, overload
+from typing import Any, TypeVar, cast, overload
 
 from ._typing import ImplicitZero
 
@@ -79,8 +80,13 @@ class NegativeInfinityType:
 
 NegativeInfinity = NegativeInfinityType()
 
+SPHINX_BUILD = os.environ.get("PARVER_SPHINX_BUILD")
+
 
 def fixup_module_metadata(module_name: str, namespace: dict[str, Any]) -> None:
+    if SPHINX_BUILD:  # pragma: no cover
+        return
+
     def fix_one(obj: Any) -> None:
         mod = getattr(obj, "__module__", None)
         if mod is not None and mod.startswith("parver."):
@@ -95,22 +101,20 @@ def fixup_module_metadata(module_name: str, namespace: dict[str, Any]) -> None:
 
 
 @overload
-def last(iterable: Iterable[T]) -> T:
-    pass
+def last(iterable: Iterable[T]) -> T: ...
 
 
 @overload
-def last(iterable: Iterable[T], *, default: T) -> T:
-    pass
+def last(iterable: Iterable[T], *, default: T) -> T: ...
 
 
-def last(iterable: Iterable[T], *, default: Union[UnsetType, T] = UNSET) -> T:
+def last(iterable: Iterable[T], *, default: UnsetType | T = UNSET) -> T:
     try:
         return deque(iterable, maxlen=1).pop()
     except IndexError:
         if default is UNSET:
             raise
-        return cast(T, default)
+        return cast("T", default)
 
 
 IMPLICIT_ZERO: ImplicitZero = ""

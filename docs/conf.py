@@ -2,8 +2,10 @@
 #
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
-
+import os
 from importlib.metadata import distribution
+
+os.environ["PARVER_SPHINX_BUILD"] = "1"
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -22,10 +24,13 @@ extensions = [
     "sphinx.ext.doctest",
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
+    "sphinx_inline_tabs",
+    "sphinx_autodoc_typehints",
 ]
 
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+pygments_style = "tango"
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -44,3 +49,12 @@ intersphinx_mapping = {
 
 autodoc_member_order = "bysource"
 autodoc_typehints = "description"
+autodoc_typehints_description_target = "documented"
+
+
+def typehints_formatter(annotation, config):
+    from parver._helpers import UnsetType
+
+    if annotation is UnsetType:
+        return "``UNSET``"
+    return None

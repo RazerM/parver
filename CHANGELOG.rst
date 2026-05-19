@@ -1,6 +1,125 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+Added
+~~~~~
+
+- New parser which preserves case and leading zeros.
+
+  .. tab:: v1.0
+
+      .. code-block:: python3
+
+          >>> Version.parse("2026.05BETA")
+          <Version '2026.05BETA'>
+
+  .. tab:: v0.5
+
+      .. code-block:: python
+
+          >>> Version.parse("2026.05BETA")
+          <Version '2026.5beta'>
+
+- Improved error messages.
+
+  .. tab:: v1.0
+
+      .. testsetup::
+
+          from parver import Version
+
+      .. doctest::
+
+          >>> Version.parse("abc")
+          Traceback (most recent call last):
+          ...
+          parver.NoLeadingNumberError: Expected a release number at position 0, found 'a'
+
+          >>> Version.parse("1.2alpha1", strict=True)
+          Traceback (most recent call last):
+          ...
+          parver.StrictPreTagError: Pre-release tag 'alpha' is not allowed in strict mode; use 'a'
+
+          >>> Version.parse("1.2-1", strict=True)
+          Traceback (most recent call last):
+          ...
+          parver.StrictSegmentError: Implicit post-release shorthand '-1' is not allowed
+          in strict mode; use '.post1'
+
+          >>> Version.parse("1+ABC", strict=True)
+          Traceback (most recent call last):
+          ...
+          parver.InvalidLocalError: Local version segment 'ABC' is not allowed in strict
+          mode: must be lowercase alphanumeric; use 'abc'
+
+  .. tab:: v0.5
+
+      .. code-block:: python
+
+          >>> Version.parse("abc")
+          Traceback (most recent call last):
+          ...
+          parver.ParseError: Expected v or int at position (1, 1) => '*abc'.
+
+          >>> Version.parse("1.2alpha1", strict=True)
+          Traceback (most recent call last):
+          ...
+          parver.ParseError: Expected pre_post_num at position (1, 5) => '1.2a*lpha1'.
+
+          >>> Version.parse("1.2-1", strict=True)
+          Traceback (most recent call last):
+          ...
+          parver.ParseError: Expected dot or 'a' or 'b' or 'rc' or sep or '+' or EOF at
+          position (1, 4) => '1.2*-1'.
+
+          >>> Version.parse("1+ABC", strict=True)
+          Traceback (most recent call last):
+          ...
+          parver.ParseError: Expected alpha or int at position (1, 3) => '1+*ABC'.
+
+- The following methods preserve leading zeros, and gain a new ``width`` argument.
+
+  - :meth:`~parver.Version.bump_epoch`
+  - :meth:`~parver.Version.bump_release`
+  - :meth:`~parver.Version.bump_release_to`
+  - :meth:`~parver.Version.set_release`
+  - :meth:`~parver.Version.bump_pre`
+  - :meth:`~parver.Version.bump_post`
+  - :meth:`~parver.Version.bump_dev`
+
+- Support for non-standard development release tags, such as ``DEV``, across:
+
+  - :attr:`~parver.Version.dev_tag`
+  - The ``dev_tag`` argument to :class:`~parver.Version`
+  - The ``tag`` argument to :meth:`~parver.Version.bump_dev`
+
+- Support for Python 3.13 and 3.14.
+
+Changed
+~~~~~~~
+
+- **BREAKING CHANGE**. The :class:`~parver.Version` constructor is now keyword-only.
+- **BREAKING CHANGE**. :meth:`Version.parse() <parver.Version.parse>` now requires ``strict`` to be passed
+  as a keyword argument.
+- **BREAKING CHANGE**. :attr:`Version.v <parver.Version.v>` now stores ``"v"``, ``"V"``, or
+  ``None`` instead of ``True`` or ``False``.
+- **BREAKING CHANGE**. ``dev_sep`` was renamed to :attr:`~parver.Version.dev_sep1`.
+
+Removed
+~~~~~~~
+
+- Support for Python 3.8 and 3.9.
+
+Fixed
+~~~~~
+
+- Development releases can now use a separator between ``dev`` and the following
+  number as permitted by PEP 440. The separator is exposed as :attr:`~parver.Version.dev_sep2`
+  and as a :class:`~parver.Version` keyword argument (`#33 <https://github.com/RazerM/parver/issues/33>`_).
+
 0.5 (2023-10-03)
 ----------------
 
@@ -27,7 +146,8 @@ Removed
 ~~~~~~~
 
 - Support for Python 2.7, 3.5, and 3.6.
-- ``__version__``, ``__author__``, and ``__email__`` attributes from `parver` module. Use :mod:`importlib.metadata` instead.
+- ``__version__``, ``__author__``, and ``__email__`` attributes from `parver`
+  module. Use :mod:`importlib.metadata` instead.
 
 
 0.3.1 (2020-09-28)
