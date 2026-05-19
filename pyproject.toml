@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=64"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "parver"
@@ -72,12 +72,6 @@ docs = { requires-python = ">=3.12" }
 [tool.uv.sources]
 # https://github.com/tox-dev/sphinx-autodoc-typehints/pull/696
 sphinx-autodoc-typehints = { git = "https://github.com/tox-dev/sphinx-autodoc-typehints" }
-
-[tool.setuptools]
-package-dir = { "" = "src" }
-
-[tool.setuptools.packages.find]
-where = ["src"]
 
 [tool.coverage.run]
 branch = true
