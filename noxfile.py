@@ -17,6 +17,8 @@ def docs(session: nox.Session) -> None:
     temp_dir = session.create_tmp()
     session.run(
         "sphinx-build",
+        "-E",
+        "-a",
         "-W",
         "-b",
         "doctest",
@@ -27,6 +29,8 @@ def docs(session: nox.Session) -> None:
     )
     session.run(
         "sphinx-build",
+        "-E",
+        "-a",
         "-W",
         "-b",
         "html",

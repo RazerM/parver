@@ -1,6 +1,10 @@
 Changelog
 =========
 
+.. towncrier-draft-entries:: |release| (Unreleased Draft)
+
+.. towncrier release notes start
+
 1.0 (2026-05-19)
 ----------------
 

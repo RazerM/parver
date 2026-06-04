@@ -1,0 +1,1 @@
+Removed an outdated documentation note claiming version strings are always converted to lowercase.

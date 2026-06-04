@@ -4,8 +4,10 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 import os
 from importlib.metadata import distribution
+from pathlib import Path
 
 os.environ["PARVER_SPHINX_BUILD"] = "1"
+PROJECT_ROOT_DIR = Path(__file__).parents[1].resolve()
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -24,6 +26,7 @@ extensions = [
     "sphinx.ext.doctest",
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
+    "sphinxcontrib.towncrier.ext",
     "sphinx_inline_tabs",
     "sphinx_autodoc_typehints",
 ]
@@ -50,6 +53,10 @@ intersphinx_mapping = {
 autodoc_member_order = "bysource"
 autodoc_typehints = "description"
 autodoc_typehints_description_target = "documented"
+
+towncrier_draft_autoversion_mode = "draft"
+towncrier_draft_include_empty = False
+towncrier_draft_working_directory = PROJECT_ROOT_DIR
 
 
 def typehints_formatter(annotation, config):
