@@ -40,7 +40,7 @@ dev = [
 docs = [
     "furo>=2025.12.19",
     "sphinx>=9.1.0",
-    "sphinx-autodoc-typehints>=3.10.2",
+    "sphinx-autodoc-typehints>=3.10.5",
     "sphinx-inline-tabs>=2025.12.21.14",
     "sphinxcontrib-towncrier>=0.5.0a0",
 ]
@@ -71,10 +71,6 @@ Documentation = "https://parver.readthedocs.io"
 
 [tool.uv.dependency-groups]
 docs = { requires-python = ">=3.12" }
-
-[tool.uv.sources]
-# https://github.com/tox-dev/sphinx-autodoc-typehints/pull/696
-sphinx-autodoc-typehints = { git = "https://github.com/tox-dev/sphinx-autodoc-typehints" }
 
 [tool.coverage.run]
 branch = true
