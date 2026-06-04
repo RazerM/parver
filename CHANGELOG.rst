@@ -5,6 +5,21 @@ Changelog
 
 .. towncrier release notes start
 
+1.0.1 (2026-06-04)
+==================
+
+Added
+-----
+
+- Support for Python 3.15. (`#96 <https://github.com/RazerM/parver/issues/96>`_)
+
+
+Fixed
+-----
+
+- Removed an outdated documentation note claiming version strings are always converted to lowercase. (`#95 <https://github.com/RazerM/parver/issues/95>`_)
+
+
 1.0 (2026-05-19)
 ----------------
 
