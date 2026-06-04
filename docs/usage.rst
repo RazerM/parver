@@ -88,7 +88,7 @@ parsing them. In this example, there are a couple of non-standard elements:
 
 Note that normalization **does not** affect equality (or ordering).
 
-Also note that ``parver`` can round-trip [#]_ your version strings;
+Also note that ``parver`` can round-trip your version strings;
 non-standard parameters are kept as-is, even when you mutate:
 
 .. doctest::
@@ -96,8 +96,5 @@ non-standard parameters are kept as-is, even when you mutate:
     >>> v = Version.parse('v1.2.alpha-3.post')
     >>> v.replace(post=None).bump_pre()
     <Version 'v1.2.alpha-4'>
-
-.. [#] One exception is that ``parver`` always converts the version string to
-       lowercase.
 
 .. _`PEP 440`: https://www.python.org/dev/peps/pep-0440/
