@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+      - uses: "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1" # v7.0.1
         with:
           persist-credentials: false
       - uses: "j178/prek-action@bdca6f102f98e2b4c7029491a53dfd366469e33d" # v2.0.4
@@ -36,7 +36,7 @@ jobs:
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14", "3.15"]
 
     steps:
-      - uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+      - uses: "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1" # v7.0.1
         with:
           persist-credentials: false
       - uses: "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405" # v6.2.0
