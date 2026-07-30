@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import sys
-from math import floor, log10
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -13,9 +12,7 @@ if TYPE_CHECKING:
 
 def intwidth(value: int | str) -> int:
     if isinstance(value, int):
-        if value == 0:
-            return 1
-        return floor(log10(abs(value))) + 1
+        return len(str(abs(value)))
     else:
         return len(value.strip().lstrip("-+").replace("_", ""))
 
