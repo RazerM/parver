@@ -454,6 +454,16 @@ def test_parse_failure_messages(version, strict, error_type, message):
         NoLeadingNumberError(version="abc", index=0),
         InvalidLocalError("ABC", "must be lowercase", replacement="abc"),
         LocalEmptyError(precursor="+"),
+        LeadingZerosError("02", "release"),
+        StrictSegmentError(
+            version="1.2-1",
+            index=3,
+            message=(
+                "Implicit post-release shorthand '-1' is not allowed in "
+                "strict mode; use '.post1'"
+            ),
+        ),
+        VPrefixNotAllowedError(),
     ],
 )
 def test_parse_errors_roundtrip_with_pickle(error):
