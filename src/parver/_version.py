@@ -368,6 +368,10 @@ class LeadingZerosError(StrictParseError):
             f"use {str(int(self.number))!r}"
         )
 
+    def __reduce__(self) -> tuple[Any, ...]:
+        cls = type(self)
+        return cls.__new__, (cls, *self.args), self.__dict__
+
 
 class ImplicitNumberError(StrictParseError):
     """Raised when an implicit number is used where strict mode requires one.
