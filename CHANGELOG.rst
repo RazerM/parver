@@ -5,7 +5,7 @@ Changelog
 
 .. towncrier release notes start
 
-1.0.1 (2026-06-04)
+1.0.1 (2026-07-30)
 ==================
 
 Added
@@ -18,6 +18,8 @@ Fixed
 -----
 
 - Removed an outdated documentation note claiming version strings are always converted to lowercase. (`#95 <https://github.com/RazerM/parver/issues/95>`_)
+- :exc:`~parver.LeadingZerosError` was not picklable. (`#115 <https://github.com/RazerM/parver/issues/115>`_)
+- ``ReleaseInt.__repr__`` dropped leading zeros for numbers with 15 or more digits due to floating-point imprecision. (`#116 <https://github.com/RazerM/parver/issues/116>`_)
 
 
 1.0 (2026-05-19)

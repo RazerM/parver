@@ -1,1 +1,0 @@
-``ReleaseInt.__repr__`` dropped leading zeros for numbers with 15 or more digits due to floating-point imprecision.
