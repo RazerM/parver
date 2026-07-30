@@ -9,6 +9,9 @@ from parver._release_int import ReleaseInt, intwidth
         (0, 1),
         (12, 2),
         (-12, 2),
+        # large values are exact, unlike floating-point log10
+        (999999999999999, 15),
+        (10**23, 24),
         ("0012", 4),
         (" +001_2 ", 4),
         ("-0012", 4),
@@ -26,6 +29,7 @@ def test_intwidth(value, expected):
         (ReleaseInt("003"), "003", "ReleaseInt('003')"),
         (-3, "-3", "-3"),
         ("-003", "-003", "ReleaseInt('-003')"),
+        ("0999999999999999", "0999999999999999", "ReleaseInt('0999999999999999')"),
     ],
 )
 def test_release_int_construction(value, expected_str, expected_repr):
