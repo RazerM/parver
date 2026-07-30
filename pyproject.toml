@@ -128,7 +128,7 @@ ignore-path = ["docs/_build"]
 package = "parver"
 directory = "newsfragments"
 filename = "CHANGELOG.rst"
-underlines = "=-"
+underlines = "-~"
 issue_format = "`#{issue} <https://github.com/RazerM/parver/issues/{issue}>`_"
 title_format = "{version} ({project_date})"
 
