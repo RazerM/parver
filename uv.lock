@@ -793,7 +793,7 @@ wheels = [
 
 [[package]]
 name = "parver"
-version = "1.0.1"
+version = "1.0.1.post0"
 source = { editable = "." }
 
 [package.dev-dependencies]
